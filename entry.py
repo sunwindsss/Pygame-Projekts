@@ -21,6 +21,22 @@ icon_y = (screen.get_height() - 100) // 2
 # Initial movement speed
 speed = 4
 
+sprite_sheet_image = pygame.image.load('images/spritesheet.png').convert_alpha()
+
+#Character sprite background
+BLACK = (0, 0, 0)
+
+#Character sprite
+def get_image(sheet, width, height, scale, colour, position):
+    image = pygame.Surface((width, height)).convert_alpha()
+    image.blit(sheet, (0, 0), (position * 64 , 64, width, height))
+    image = pygame.transform.scale(image, (width * scale, height * scale))
+    image.set_colorkey(colour)
+    return image
+
+#Getting a certain character animation from sprite
+frame_0 = get_image(sprite_sheet_image, 64, 64, 5, BLACK, 0)
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -50,6 +66,8 @@ while running:
 
     # Draw the icon at the new position
     screen.blit(pygame.transform.scale(icon, (100, 100)), (icon_x, icon_y))
+
+    screen.blit(frame_0, (0, 0))
 
     pygame.display.update()
 
