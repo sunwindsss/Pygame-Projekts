@@ -31,7 +31,7 @@ while running:
 
     # Adjust speed based on linear or diagonal movement
     if (keys[pygame.K_w] or keys[pygame.K_s]) and (keys[pygame.K_a] or keys[pygame.K_d]):
-        speed = 3  # Reduce speed for diagonal movement
+        speed = 2.828  # Reduce speed for diagonal movement
     else:
         speed = 4  # Reset speed for non-diagonal movement
 
