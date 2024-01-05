@@ -1,23 +1,46 @@
 import pygame
 
 pygame.init()
-screen = pygame.display.set_mode((800, 600)) # flags=pygame.NOFRAME
+running = True
+WIDTH = 800
+HEIGHT = 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
+# Load the icon and set is as the window icon
 icon = pygame.image.load('images/icon.png')
 pygame.display.set_icon(icon)
 
-running = True
+# Load background image
+background_image = pygame.image.load('images/grass_bg.png')
+background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+
+# Initial position of the icon (centered)
+icon_x = (screen.get_width() - 100) // 2
+icon_y = (screen.get_height() - 100) // 2
 
 while running:
-
-    # screen.fill((252, 186, 3))
-
-    pygame.display.update()
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
             pygame.quit()
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_a:
-                screen.fill((3, 24, 252))
-                pygame.display.update()
+
+    # Get the keys that are currently pressed
+    keys = pygame.key.get_pressed()
+
+    # Move the icon based on the pressed keys
+    if keys[pygame.K_w] and icon_y > 0:
+        icon_y -= 5
+    if keys[pygame.K_a] and icon_x > 0:
+        icon_x -= 5
+    if keys[pygame.K_s] and icon_y < HEIGHT - 100:
+        icon_y += 5
+    if keys[pygame.K_d] and icon_x < WIDTH - 100:
+        icon_x += 5
+
+    # Draw the background
+    screen.blit(background_image, (0, 0))
+
+    # Draw the icon at the new position
+    screen.blit(pygame.transform.scale(icon, (100, 100)), (icon_x, icon_y))
+
+    pygame.display.update()
