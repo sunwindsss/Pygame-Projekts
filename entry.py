@@ -1,8 +1,8 @@
 import pygame
 
 pygame.init()
-WIDTH = 800
-HEIGHT = 600
+WIDTH = 1000
+HEIGHT = 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 background_surface = pygame.Surface((WIDTH, HEIGHT))
 icon = pygame.image.load('images/icon.png')
@@ -18,6 +18,9 @@ running = True
 icon_x = (screen.get_width() - 100) // 2
 icon_y = (screen.get_height() - 100) // 2
 
+# Initial movement speed
+speed = 4
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -26,15 +29,21 @@ while running:
     # Get the keys that are currently pressed
     keys = pygame.key.get_pressed()
 
+    # Adjust speed based on linear or diagonal movement
+    if (keys[pygame.K_w] or keys[pygame.K_s]) and (keys[pygame.K_a] or keys[pygame.K_d]):
+        speed = 2.828  # Reduce speed for diagonal movement
+    else:
+        speed = 4  # Reset speed for non-diagonal movement
+
     # Move the icon based on the pressed keys
     if keys[pygame.K_w] and icon_y > 0:
-        icon_y -= 5
+        icon_y -= speed
     if keys[pygame.K_a] and icon_x > 0:
-        icon_x -= 5
+        icon_x -= speed
     if keys[pygame.K_s] and icon_y < HEIGHT - 100:
-        icon_y += 5
+        icon_y += speed
     if keys[pygame.K_d] and icon_x < WIDTH - 100:
-        icon_x += 5
+        icon_x += speed
 
     # Draw the background
     screen.blit(background_image, (0, 0))
