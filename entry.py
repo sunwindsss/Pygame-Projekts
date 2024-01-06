@@ -56,7 +56,7 @@ animation_list = []
 animation_steps = [4, 6, 3, 4]
 action = 0
 last_update = pygame.time.get_ticks()
-animation_cooldown = 75
+animation_cooldown = 100
 frame = 0
 step_counter = 0
 
@@ -81,7 +81,7 @@ while running:
     else:
         speed = speed_linear  # Reset speed for non-diagonal movement
 
-    #update animation
+    # Update animation
     current_time = pygame.time.get_ticks()
     if current_time - last_update >= animation_cooldown:
         frame += 1
@@ -89,8 +89,7 @@ while running:
         if frame >= len(animation_list[action]):
             frame = 0
 
-
-    #Move the icon based on the pressed keys
+    # Move the icon based on the pressed keys
     if keys[pygame.K_w] and icon_y > 0:
         icon_y -= speed
         action = 1
@@ -103,9 +102,8 @@ while running:
     if keys[pygame.K_d] and icon_x < WIDTH - PLAYER_WIDTH:
         icon_x += speed
         action = 1
-    if not keys[pygame.K_w] and not keys[pygame.K_a] and not keys[pygame.K_s] and not keys[pygame.K_d]:
+    if frame == 0:
         action = 0
-        frame = 0
 
     # Calculate the camera offset to keep the icon centered
     camera_x = icon_x - (WIDTH / 2) + (PLAYER_WIDTH/2)
@@ -115,7 +113,6 @@ while running:
     screen.blit(background_image, (-camera_x, -camera_y))
 
     # Draw the icon at the new position
-    # screen.blit(pygame.transform.scale(icon, (PLAYER_WIDTH, PLAYER_HEIGHT)), (icon_x - camera_x, icon_y - camera_y))
     screen.blit(animation_list[action][frame], (icon_x - camera_x, icon_y - camera_y))
 
     # FPS counter
@@ -123,7 +120,6 @@ while running:
     screen.blit(fps_text, (10, 10))
     
     pygame.display.update()
-
     # FPS limitācija
     clock.tick(FPS)
 
