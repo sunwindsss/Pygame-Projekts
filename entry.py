@@ -3,10 +3,18 @@ import pygame
 pygame.init()
 WIDTH = 1000
 HEIGHT = 800
+FPS = 60
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 background_surface = pygame.Surface((WIDTH, HEIGHT))
 icon = pygame.image.load('images/icon.png')
 pygame.display.set_icon(icon)
+pygame.display.set_caption("ROGUELIKE STUFF")
+
+# Pulkstenis spēlei (object), lai regulētu FPS
+clock = pygame.time.Clock()
+
+# Fonts FPS skaitītājam
+font = pygame.font.Font(None, 36)
 
 # Load background image
 background_image = pygame.image.load('images/grass_bg.png')
@@ -51,7 +59,14 @@ while running:
     # Draw the icon at the new position
     screen.blit(pygame.transform.scale(icon, (100, 100)), (icon_x, icon_y))
 
+    # FPS counter
+    fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, (0, 0, 0))
+    screen.blit(fps_text, (10, 10))
+
     pygame.display.update()
+
+    # FPS limitācija
+    clock.tick(FPS)
 
 # Quit pygame outside the loop
 pygame.quit()
