@@ -16,8 +16,8 @@ background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 running = True
 
 # Initial position of the icon
-icon_x = (screen.get_width() - 100) // 2
-icon_y = (screen.get_height() - 100) // 2
+icon_x = (screen.get_width() - 96) // 2
+icon_y = (screen.get_height() - 96) // 2
 
 # Initial movement speed
 speed = 4
@@ -33,7 +33,7 @@ animation_list = []
 animation_steps = [4, 6, 3, 4]
 action = 0
 last_update = pygame.time.get_ticks()
-animation_cooldown = 75
+animation_cooldown = 100
 frame = 0
 step_counter = 0
 
@@ -71,25 +71,26 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    #     if event.type == pygame.KEYDOWN:
-    #         if event.key == pygame.K_w and icon_y > 0:
-    #             icon_y -= speed
-    #             action = 1
-    #         if event.key == pygame.K_a and icon_x > 0:
-    #             icon_x -= speed
-    #             action = 1
-    #         if event.key == pygame.K_s and icon_y < HEIGHT - 100:
-    #             icon_y += speed
-    #             action = 1
-    #         if event.key == pygame.K_d and icon_x < WIDTH - 100:
-    #             icon_x += speed
-    #             action = 1
-    #     if event.type == pygame.KEYUP:
-    #         action = 0
-    #         frame = 0
-    #
-    # # Draw the player at the new position
-    # screen.blit(animation_list[action][frame], (icon_x, icon_y))
+        # if event.type == pygame.KEYDOWN:
+        #     if event.key == pygame.K_w and icon_y > 0:
+        #         icon_y -= speed
+        #         action = 1
+        #     if event.key == pygame.K_a and icon_x > 0:
+        #         icon_x -= speed
+        #         action = 1
+        #     if event.key == pygame.K_s and icon_y < HEIGHT - 96:
+        #         icon_y += speed
+        #         action = 1
+        #     if event.key == pygame.K_d and icon_x < WIDTH - 96:
+        #         icon_x += speed
+        #         action = 1
+            # if not event.key == pygame.K_w and not event.key == pygame.K_a and not event.key == pygame.K_s and not event.key == pygame.K_d:
+            #     action = 0
+            #     frame = 0
+
+        # if event.type == pygame.KEYUP:
+        #     action = 0
+        #     frame = 0
 
     #Move the icon based on the pressed keys
     if keys[pygame.K_w] and icon_y > 0:
@@ -98,16 +99,24 @@ while running:
     if keys[pygame.K_a] and icon_x > 0:
         icon_x -= speed
         action = 1
-    if keys[pygame.K_s] and icon_y < HEIGHT - 100:
+    if keys[pygame.K_s] and icon_y < HEIGHT - 96:
         icon_y += speed
         action = 1
-    if keys[pygame.K_d] and icon_x < WIDTH - 100:
+    if keys[pygame.K_d] and icon_x < WIDTH - 96:
         icon_x += speed
         action = 1
-    if event.type == pygame.KEYUP:
+    if not keys[pygame.K_w] and not keys[pygame.K_a] and not keys[pygame.K_s] and not keys[pygame.K_d]:
         action = 0
         frame = 0
+    # if event.type == pygame.KEYUP:
+    #     action = 0
+    #     frame = 0
+    # if sum(keys) == 0:
+    #     action = 0
+    #     frame = 0
 
+
+    # Draw the player at the new position
     screen.blit(animation_list[action][frame], (icon_x, icon_y))
 
     pygame.display.update()
