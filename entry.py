@@ -1,4 +1,5 @@
 import pygame
+import spritesheet
 
 pygame.init()
 WIDTH = 1000
@@ -21,26 +22,29 @@ icon_y = (screen.get_height() - 100) // 2
 # Initial movement speed
 speed = 4
 
-sprite_sheet_image = pygame.image.load('images/spritesheet.png').convert_alpha()
-
 #Character sprite background
 BLACK = (0, 0, 0)
 
-#Character sprite
-def get_image(sheet, width, height, scale, colour, position):
-    image = pygame.Surface((width, height)).convert_alpha()
-    image.blit(sheet, (0, 0), (position * 64 , 64, width, height))
-    image = pygame.transform.scale(image, (width * scale, height * scale))
-    image.set_colorkey(colour)
-    return image
+sprite_sheet_image = pygame.image.load('images/doux.png').convert_alpha()
+sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
 
-#Getting a certain character animation from sprite
-frame_0 = get_image(sprite_sheet_image, 64, 64, 5, BLACK, 0)
+#create animation list
+animation_list = []
+animation_steps = [4, 6, 3, 4]
+action = 0
+last_update = pygame.time.get_ticks()
+animation_cooldown = 75
+frame = 0
+step_counter = 0
+
+for animation in animation_steps:
+    temp_img_list = []
+    for _ in range(animation):
+        temp_img_list.append(sprite_sheet.get_image(step_counter, 24, 24, 4, BLACK))
+        step_counter += 1
+    animation_list.append(temp_img_list)
 
 while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
 
     # Get the keys that are currently pressed
     keys = pygame.key.get_pressed()
@@ -51,23 +55,60 @@ while running:
     else:
         speed = 4  # Reset speed for non-diagonal movement
 
-    # Move the icon based on the pressed keys
-    if keys[pygame.K_w] and icon_y > 0:
-        icon_y -= speed
-    if keys[pygame.K_a] and icon_x > 0:
-        icon_x -= speed
-    if keys[pygame.K_s] and icon_y < HEIGHT - 100:
-        icon_y += speed
-    if keys[pygame.K_d] and icon_x < WIDTH - 100:
-        icon_x += speed
-
     # Draw the background
     screen.blit(background_image, (0, 0))
 
-    # Draw the icon at the new position
-    screen.blit(pygame.transform.scale(icon, (100, 100)), (icon_x, icon_y))
+    #update animation
+    current_time = pygame.time.get_ticks()
+    if current_time - last_update >= animation_cooldown:
+        frame += 1
+        last_update = current_time
+        if frame >= len(animation_list[action]):
+            frame = 0
 
-    screen.blit(frame_0, (0, 0))
+    #mans movement variants
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    #     if event.type == pygame.KEYDOWN:
+    #         if event.key == pygame.K_w and icon_y > 0:
+    #             icon_y -= speed
+    #             action = 1
+    #         if event.key == pygame.K_a and icon_x > 0:
+    #             icon_x -= speed
+    #             action = 1
+    #         if event.key == pygame.K_s and icon_y < HEIGHT - 100:
+    #             icon_y += speed
+    #             action = 1
+    #         if event.key == pygame.K_d and icon_x < WIDTH - 100:
+    #             icon_x += speed
+    #             action = 1
+    #     if event.type == pygame.KEYUP:
+    #         action = 0
+    #         frame = 0
+    #
+    # # Draw the player at the new position
+    # screen.blit(animation_list[action][frame], (icon_x, icon_y))
+
+    #Move the icon based on the pressed keys
+    if keys[pygame.K_w] and icon_y > 0:
+        icon_y -= speed
+        action = 1
+    if keys[pygame.K_a] and icon_x > 0:
+        icon_x -= speed
+        action = 1
+    if keys[pygame.K_s] and icon_y < HEIGHT - 100:
+        icon_y += speed
+        action = 1
+    if keys[pygame.K_d] and icon_x < WIDTH - 100:
+        icon_x += speed
+        action = 1
+    if event.type == pygame.KEYUP:
+        action = 0
+        frame = 0
+
+    screen.blit(animation_list[action][frame], (icon_x, icon_y))
 
     pygame.display.update()
 
