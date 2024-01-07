@@ -117,7 +117,7 @@ while running:
     camera_y = icon_y - (HEIGHT / 2) + (PLAYER_HEIGHT/2)
 
     # Draw the BLACK background centered
-    screen.blit(black_background, (camera_x - (BACKGROUND_WIDTH/2) , camera_y - (BACKGROUND_HEIGHT/2)))
+    screen.blit(black_background, (camera_x - (BACKGROUND_WIDTH/2), camera_y - (BACKGROUND_HEIGHT/2)))
 
     # Draw the GRASS background with the camera offset
     screen.blit(background_image, (-camera_x, -camera_y))
