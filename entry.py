@@ -57,7 +57,7 @@ sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
 # Create animation list
 animation_list = []
 #animation type list 0 - 3 is walking and 4 - 7 is idle animations
-animation_steps = [6, 6, 6, 6, 6, 6, 6, 6]
+animation_steps = [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
 last_update = pygame.time.get_ticks()
 animation_cooldown = 150
 #animation that will be set as default when game starts
@@ -110,6 +110,15 @@ while running:
     if keys[pygame.K_w] and icon_y > 0:
         icon_y -= speed
         action = 3
+    if keys[pygame.K_k]:
+        if last_lift_up == pygame.K_w:
+            action = 11
+        elif last_lift_up == pygame.K_s:
+            action = 8
+        elif last_lift_up == pygame.K_a:
+            action = 9
+        elif last_lift_up == pygame.K_d:
+            action = 10
     # player model uses idle animations according to key released
     if sum(keys) == 0 and last_lift_up == pygame.K_w:
         action = 7
