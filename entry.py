@@ -51,23 +51,26 @@ speed_linear = 4
 speed_diagonal = 2.828
 
 # Load sprite sheet image
-sprite_sheet_image = pygame.image.load('images/spritesheet.png').convert_alpha()
+sprite_sheet_image = pygame.image.load('images/player.png').convert_alpha()
 sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
 
 # Create animation list
 animation_list = []
-#animation types
-animation_steps = [4, 4, 4, 4]
+#animation type list 0 - 3 is walking and 4 - 7 is idle animations
+animation_steps = [6, 6, 6, 6, 6, 6, 6, 6]
 last_update = pygame.time.get_ticks()
-animation_cooldown = 100
-action = 0
+animation_cooldown = 150
+#animation that will be set as default when game starts
+action = 4
 frame = 0
 step_counter = 0
+
+last_lift_up = None
 
 for animation in animation_steps:
     temp_img_list = []
     for _ in range(animation):
-        temp_img_list.append(sprite_sheet.get_image(step_counter, 64, 64, 2, BLACK))
+        temp_img_list.append(sprite_sheet.get_image(step_counter, 48, 48, 3, BLACK))
         step_counter += 1
     animation_list.append(temp_img_list)
 
@@ -76,9 +79,6 @@ black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
 black_background.fill(BLACK)
 
 while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
 
     # Get the keys that are currently pressed
     keys = pygame.key.get_pressed()
@@ -97,7 +97,7 @@ while running:
         if frame >= len(animation_list[action]):
             frame = 0
 
-    # Move the icon based on the pressed keys
+    # Move the icon based on the pressed keys and use appropriate animations
     if keys[pygame.K_w] and icon_y > 0:
         icon_y -= speed
         action = 3
@@ -110,8 +110,15 @@ while running:
     if keys[pygame.K_a] and icon_x > 0:
         icon_x -= speed
         action = 1
-    if sum(keys) == 0:
-        frame = 0
+    # player model uses idle animations according to key released
+    if sum(keys) == 0 and last_lift_up == pygame.K_w:
+        action = 7
+    if sum(keys) == 0 and last_lift_up == pygame.K_s:
+        action = 4
+    if sum(keys) == 0 and last_lift_up == pygame.K_a:
+        action = 5
+    if sum(keys) == 0 and last_lift_up == pygame.K_d:
+        action = 6
 
     # Calculate the camera offset to keep the icon centered
     camera_x = icon_x - (WIDTH / 2) + (PLAYER_WIDTH/2)
@@ -134,6 +141,12 @@ while running:
     
     # FPS limitation
     clock.tick(FPS)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYUP:
+            last_lift_up = event.key
 
 # Quit pygame outside the loop
 pygame.quit()
