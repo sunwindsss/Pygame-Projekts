@@ -1,5 +1,7 @@
 import pygame
 import spritesheet
+import math
+import random
 
 pygame.init()
 
@@ -44,11 +46,23 @@ running = True
 # Initial position of the icon
 icon_x = (screen.get_width() - PLAYER_WIDTH) / 2
 icon_y = (screen.get_height() - PLAYER_HEIGHT) / 2
-enemy_icon_x = 100
-enemy_icon_y = 100
+# Decide a location for enemy
+def enemy_location():
+    square_top_left_x = 0
+    square_top_left_y = 0
+    square_bottom_right_x = WIDTH
+    square_bottom_right_y = HEIGHT
+    while True:
+        # Generate random x and y coordinates outside the square
+        x = random.uniform(square_top_left_x - 100, square_bottom_right_x + 100)
+        y = random.uniform(square_top_left_y - 100, square_bottom_right_y + 100)
+        
+        # Check if the generated point is outside the square
+        if x < square_top_left_x or x > square_bottom_right_x or y < square_top_left_y or y > square_bottom_right_y:
+            return x, y
 
 # Initial movement speed (coefficient 0.707)
-speed = 4
+speed = 100
 speed_linear = 4
 speed_diagonal = 2.828
 
@@ -81,7 +95,7 @@ for animation in animation_steps:
 
 # Enemy animation list 
 enemy_animation_list = []
-enemy_animation_steps = [4, 6, 3, 4]
+enemy_animation_steps = [6, 6, 7, 6]
 enemy_action = 0
 enemy_last_update = pygame.time.get_ticks()
 enemy_animation_cooldown = 100
@@ -99,11 +113,15 @@ for enemy_animation in enemy_animation_steps:
 black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
 black_background.fill(BLACK)
 
+# Getting the enemy location
+enemy_coordinate = enemy_location()
+enemy_icon_x = enemy_coordinate[0]
+enemy_icon_y = enemy_coordinate[1]
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
     # Get the keys that are currently pressed
     keys = pygame.key.get_pressed()
 
@@ -154,17 +172,19 @@ while running:
     screen.blit(background_image, (-camera_x, -camera_y))
 
 
-    # Draw the icon at the new position
+    # Draw the ICON at the new position
     screen.blit(animation_list[action][frame], (icon_x - camera_x, icon_y - camera_y))
 
-    #Draw enemy icon
+    #Draw ENEMY icon
     screen.blit(enemy_animation_list[enemy_action][enemy_frame], (enemy_icon_x - camera_x, enemy_icon_y - camera_y))
 
     #Enemy movement
     if icon_x > enemy_icon_x:
         enemy_icon_x += speed/2
+        enemy_action = 1
     if icon_x < enemy_icon_x:
         enemy_icon_x -= speed/2
+        enemy_action = 3
     if icon_y > enemy_icon_y:
         enemy_icon_y += speed/2
     if icon_y < enemy_icon_y:
