@@ -174,7 +174,7 @@ def move_icon():
         elif last_lift_up == pygame.K_d:
             action = 6
     
-    if keys[pygame.K_SPACE] and not keys[pygame.K_w] and not keys[pygame.K_s] and not keys[pygame.K_d] and not keys[pygame.K_d]:
+    if keys[pygame.K_SPACE] and not keys[pygame.K_w] and not keys[pygame.K_s] and not keys[pygame.K_a] and not keys[pygame.K_d]:
         frame = 0
         if last_lift_up == pygame.K_w:
             action = 11
