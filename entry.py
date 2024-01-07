@@ -8,8 +8,8 @@ WIDTH = 1000
 HEIGHT = 800
 BACKGROUND_WIDTH = 5000
 BACKGROUND_HEIGHT = 5000
-PLAYER_WIDTH = 96
-PLAYER_HEIGHT = 96
+PLAYER_WIDTH = 144
+PLAYER_HEIGHT = 144
 FPS = 60
 
 # Color codes
@@ -98,9 +98,6 @@ while running:
             frame = 0
 
     # Move the icon based on the pressed keys and use appropriate animations
-    if keys[pygame.K_w] and icon_y > 0:
-        icon_y -= speed
-        action = 3
     if keys[pygame.K_s] and icon_y < HEIGHT - PLAYER_HEIGHT:
         icon_y += speed
         action = 0
@@ -110,6 +107,9 @@ while running:
     if keys[pygame.K_a] and icon_x > 0:
         icon_x -= speed
         action = 1
+    if keys[pygame.K_w] and icon_y > 0:
+        icon_y -= speed
+        action = 3
     # player model uses idle animations according to key released
     if sum(keys) == 0 and last_lift_up == pygame.K_w:
         action = 7
