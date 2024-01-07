@@ -73,7 +73,7 @@ def create_animation_list():
     """
     global animation_list, action, frame, step_counter, last_update, animation_cooldown, last_lift_up
     animation_list = []
-    animation_steps = [6, 6, 6, 6, 6, 6, 6, 6]
+    animation_steps = [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
     last_update = pygame.time.get_ticks() # Controls animation speed
     animation_cooldown = 150
     action = 4 # Animation that will be set as default when game starts
@@ -141,7 +141,7 @@ def move_icon():
     adjusting the speed for diagonal or linear movement. 
     Determines the appropriate animation sequence to use based on the direction of movement.
     """
-    global icon_x, icon_y, action
+    global icon_x, icon_y, action, frame
     keys = pygame.key.get_pressed()
 
     # Adjust speed based on linear or diagonal movement
@@ -173,6 +173,17 @@ def move_icon():
             action = 5
         elif last_lift_up == pygame.K_d:
             action = 6
+    
+    if keys[pygame.K_SPACE] and not keys[pygame.K_w] and not keys[pygame.K_s] and not keys[pygame.K_d] and not keys[pygame.K_d]:
+        frame = 0
+        if last_lift_up == pygame.K_w:
+            action = 11
+        elif last_lift_up == pygame.K_s:
+            action = 8
+        elif last_lift_up == pygame.K_a:
+            action = 9
+        elif last_lift_up == pygame.K_d:
+            action = 10
 
 def calculate_camera_offset():
     """
