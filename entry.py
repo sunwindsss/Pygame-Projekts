@@ -1,75 +1,51 @@
 import pygame
 import spritesheet
 
-def initialize_game():
-    pygame.init()
-
-    # Static variables
-    global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS
-    WIDTH = 1000
-    HEIGHT = 800
-    BACKGROUND_WIDTH = 5000
-    BACKGROUND_HEIGHT = 5000
-    PLAYER_WIDTH = 144
-    PLAYER_HEIGHT = 144
+def set_static_variables():
+    global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS, speed, speed_linear, speed_diagonal
+    WIDTH, HEIGHT = 1000, 800
+    BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 5000, 5000
+    PLAYER_WIDTH, PLAYER_HEIGHT = 144, 144
     FPS = 60
+    speed = 4 # Coefficient 0.707
+    speed_linear = 4
+    speed_diagonal = 2.828
 
-    # Color codes
+
+def set_color_codes():
     global BLACK, WHITE, RED, GREEN, BLUE, MAGENTA, YELLOW
-    BLACK = (0, 0, 0)
-    WHITE = (255, 255, 255)
-    RED = (255, 0, 0)
-    GREEN = (0, 255, 0)
-    BLUE = (0, 0, 255)
-    MAGENTA = (255, 0, 255)
-    YELLOW = (255, 255, 0)
+    BLACK, WHITE = (0, 0, 0), (255, 255, 255)
+    RED, GREEN, BLUE = (255, 0, 0), (0, 255, 0), (0, 0, 255)
+    MAGENTA, YELLOW = (255, 0, 255), (255, 255, 0)
 
-    # Basic settings related to the game window
-    global screen, background_surface, icon, clock, font, background_image, running, icon_x, icon_y
+def set_basic_settings():
+    global screen, background_surface, icon, clock, font, running, icon_x, icon_y
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     background_surface = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
     icon = pygame.image.load('images/icon.png')
     pygame.display.set_icon(icon)
     pygame.display.set_caption("ROGUELIKE STUFF")
-
-    # Clock for controlling FPS
     clock = pygame.time.Clock()
+    font = pygame.font.Font(None, 40) # Font for FPS counter
+    running = True
+    icon_x, icon_y = (screen.get_width() - PLAYER_WIDTH) / 2, (screen.get_height() - PLAYER_HEIGHT) / 2
 
-    # Font for the FPS counter
-    font = pygame.font.Font(None, 40)
-
-    # Load background image
+def load_images():
+    global background_image, sprite_sheet, black_background
     background_image = pygame.image.load('images/grass_bg.png')
     background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
-
-    # Game status
-    global speed, speed_linear, speed_diagonal, sprite_sheet, animation_list, action, frame, step_counter, last_update, animation_cooldown, last_lift_up
-    running = True
-
-    # Initial position of the icon
-    icon_x = (screen.get_width() - PLAYER_WIDTH) / 2
-    icon_y = (screen.get_height() - PLAYER_HEIGHT) / 2
-
-    # Initial movement speed (coefficient 0.707)
-    speed = 4
-    speed_linear = 4
-    speed_diagonal = 2.828
-
-    # Load sprite sheet image
     sprite_sheet_image = pygame.image.load('images/player.png').convert_alpha()
     sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
+    black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
+    black_background.fill(BLACK)
 
-    # Create animation list
+def create_animation_list():
+    global animation_list, action, frame, step_counter, last_update, animation_cooldown, last_lift_up
     animation_list = []
-    # animation type list 0 - 3 is walking and 4 - 7 is idle animations 8 - 11 is attacking animations
-    animation_steps = [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
+    animation_steps = [6, 6, 6, 6, 6, 6, 6, 6]
     last_update = pygame.time.get_ticks()
     animation_cooldown = 150
-    # animation that will be set as default when the game starts
-    action = 4
-    frame = 0
-    step_counter = 0
-
+    action, frame, step_counter = 4, 0, 0
     last_lift_up = None
 
     for animation in animation_steps:
@@ -79,10 +55,13 @@ def initialize_game():
             step_counter += 1
         animation_list.append(temp_img_list)
 
-    # Create black background surface
-    global black_background
-    black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
-    black_background.fill(BLACK)
+def initialize_game():
+    pygame.init()
+    set_static_variables()
+    set_color_codes()
+    set_basic_settings()
+    load_images()
+    create_animation_list()
 
 def handle_events():
     global running, last_lift_up
@@ -110,17 +89,6 @@ def move_icon():
         speed = speed_diagonal  # Reduce speed for diagonal movement
     else:
         speed = speed_linear  # Reset speed for non-diagonal movement
-
-    #shooting animation
-    if keys[pygame.K_k]:
-        if last_lift_up == pygame.K_w:
-            action = 11
-        elif last_lift_up == pygame.K_s:
-            action = 8
-        elif last_lift_up == pygame.K_a:
-            action = 9
-        elif last_lift_up == pygame.K_d:
-            action = 10
 
     if keys[pygame.K_s] and icon_y < HEIGHT - PLAYER_HEIGHT:
         icon_y += speed
