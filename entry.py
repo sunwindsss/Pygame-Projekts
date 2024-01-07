@@ -1,6 +1,5 @@
 import pygame
 import spritesheet
-import math
 import random
 
 def set_static_variables():
@@ -33,11 +32,16 @@ def set_basic_settings():
     icon_x, icon_y = (screen.get_width() - PLAYER_WIDTH) / 2, (screen.get_height() - PLAYER_HEIGHT) / 2
 
 def load_images():
-    global background_image, sprite_sheet, black_background
+    global background_image, sprite_sheet, black_background, enemy_sprite_sheet
     background_image = pygame.image.load('images/grass_bg.png')
     background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+
     sprite_sheet_image = pygame.image.load('images/player.png').convert_alpha()
     sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
+
+    enemy_sprite_sheet_image = pygame.image.load('images/enemy1.png').convert_alpha()
+    enemy_sprite_sheet = spritesheet.SpriteSheet(enemy_sprite_sheet_image)
+
     black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
     black_background.fill(BLACK)
 
@@ -57,6 +61,24 @@ def create_animation_list():
             step_counter += 1
         animation_list.append(temp_img_list)
 
+def create_enemy_animation_list():
+    global enemy_animation_list, enemy_action, enemy_frame, enemy_step_counter, enemy_last_update, enemy_animation_cooldown
+    enemy_animation_list = []
+    enemy_animation_steps = [6, 6, 7, 6]
+    enemy_action = 0
+    enemy_last_update = pygame.time.get_ticks()
+    enemy_animation_cooldown = 100
+    enemy_frame = 0
+    enemy_step_counter = 0
+
+
+    for enemy_animation in enemy_animation_steps:
+        temp_img_list2 = []
+        for _ in range(enemy_animation):
+            temp_img_list2.append(enemy_sprite_sheet.get_image(enemy_step_counter, 24, 24, 4, BLACK))
+            enemy_step_counter += 1
+        enemy_animation_list.append(temp_img_list2)
+
 def initialize_game():
     pygame.init()
     set_static_variables()
@@ -64,26 +86,42 @@ def initialize_game():
     set_basic_settings()
     load_images()
     create_animation_list()
+    create_enemy_animation_list()
 
+PLAYER_HIT = pygame.USEREVENT + 1
 def handle_events():
-    global running, last_lift_up
+    global running, last_lift_up, player_health
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYUP:
             last_lift_up = event.key
+        elif event.type == PLAYER_HIT:
+            player_health -= 1
+            print(player_health)
+            
+
 
 def update_animation():
     global frame, last_update, animation_cooldown, action
+    global enemy_frame, enemy_last_update, enemy_animation_cooldown, enemy_action
+    # Update player animations
     current_time = pygame.time.get_ticks()
     if current_time - last_update >= animation_cooldown:
         frame += 1
         last_update = current_time
         if frame >= len(animation_list[action]):
             frame = 0
+    # Update enemy animations
+    enemy_current_time = pygame.time.get_ticks()
+    if enemy_current_time - enemy_last_update >= enemy_animation_cooldown:
+        enemy_frame += 1
+        enemy_last_update = enemy_current_time
+        if enemy_frame >= len(enemy_animation_list[enemy_action]):
+            enemy_frame = 0 
 
 def move_icon():
-    global icon_x, icon_y, action
+    global player, action
     keys = pygame.key.get_pressed()
 
     # Adjust speed based on linear or diagonal movement
@@ -92,18 +130,19 @@ def move_icon():
     else:
         speed = speed_linear  # Reset speed for non-diagonal movement
 
-    if keys[pygame.K_s] and icon_y < HEIGHT - PLAYER_HEIGHT:
-        icon_y += speed
+    if keys[pygame.K_s] and player.y < HEIGHT - PLAYER_HEIGHT:
+        player.y += speed
         action = 0
-    if keys[pygame.K_d] and icon_x < WIDTH - PLAYER_WIDTH:
-        icon_x += speed
+    if keys[pygame.K_d] and player.x < WIDTH - PLAYER_WIDTH:
+        player.x += speed
         action = 2
-    if keys[pygame.K_a] and icon_x > 0:
-        icon_x -= speed
+    if keys[pygame.K_a] and player.x > 0:
+        player.x -= speed
         action = 1
-    if keys[pygame.K_w] and icon_y > 0:
-        icon_y -= speed
+    if keys[pygame.K_w] and player.y > 0:
+        player.y -= speed
         action = 3
+
 
     if sum(keys) == 0:
         if last_lift_up == pygame.K_w:
@@ -114,31 +153,92 @@ def move_icon():
             action = 5
         elif last_lift_up == pygame.K_d:
             action = 6
+# Enemy stuff
+def enemy_pathfinding():
+    global player, enemy_action, enemy
+    if player.x > enemy.x:
+        enemy.x += speed/2
+        enemy_action = 1
+    if player.x < enemy.x:
+        enemy.x -= speed/2
+        enemy_action = 3
+    if player.y > enemy.y:
+        enemy.y += speed/2
+    if player.y < enemy.y:
+        enemy.y -= speed/2
+
+def enemy_spawn():
+    square_top_left_x = 0
+    square_top_left_y = 0
+    square_bottom_right_x = WIDTH
+    square_bottom_right_y = HEIGHT
+    while True:
+        # Generate random x and y coordinates outside the square
+        x = random.uniform(square_top_left_x - 100, square_bottom_right_x + 100)
+        y = random.uniform(square_top_left_y - 100, square_bottom_right_y + 100)
+        
+        # Check if the generated point is outside the square
+        if x < square_top_left_x or x > square_bottom_right_x or y < square_top_left_y or y > square_bottom_right_y:
+            return x, y 
 
 def calculate_camera_offset():
     global camera_x, camera_y
-    camera_x = icon_x - (WIDTH / 2) + (PLAYER_WIDTH / 2)
-    camera_y = icon_y - (HEIGHT / 2) + (PLAYER_HEIGHT / 2)
+    camera_x = player.x - (WIDTH / 2) + (PLAYER_WIDTH / 2)
+    camera_y = player.y - (HEIGHT / 2) + (PLAYER_HEIGHT / 2)
 
 def draw_elements():
     screen.blit(black_background, (camera_x - (BACKGROUND_WIDTH / 2), camera_y - (BACKGROUND_HEIGHT / 2)))
     screen.blit(background_image, (-camera_x, -camera_y))
-    screen.blit(animation_list[action][frame], (icon_x - camera_x, icon_y - camera_y))
+    screen.blit(enemy_animation_list[enemy_action][enemy_frame], (enemy.x - camera_x + 28, enemy.y - camera_y + 28))
+    screen.blit(animation_list[action][frame], (player.x - camera_x, player.y - camera_y))
+    health_bar.draw(screen)
 
 def draw_fps_counter():
     fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, WHITE)
     screen.blit(fps_text, (10, 10))
 
+def player_damage(player, enemy):
+    if player.colliderect(enemy):
+        pygame.event.post(pygame.event.Event(PLAYER_HIT))
+
+class HealthBar():
+    def __init__(self, x, y, w, h, max_hp):
+        self.x = x 
+        self.y = y
+        self.w = w 
+        self.h = h
+        self.hp = max_hp
+        self.max_hp = max_hp
+    def draw(self, surface):
+        ratio = self.hp / self.max_hp
+        pygame.draw.rect(screen, RED, (WIDTH/2 - 23, HEIGHT/2 - 60, 50, 10))
+        pygame.draw.rect(screen, GREEN, (WIDTH/2 - 23, HEIGHT/2 - 60, 50 * ratio, 10))
+    
+
 def main_loop():
-    global running
+    global running, enemy_icon_x, enemy_icon_y, player_health, player, enemy, health_bar
+
+    enemy_coordinate = enemy_spawn()
+    enemy_icon_x = enemy_coordinate[0]
+    enemy_icon_y = enemy_coordinate[1]
+
+    player = pygame.Rect(icon_x, icon_y, PLAYER_WIDTH/3,PLAYER_HEIGHT/2)
+    health_bar = HealthBar(250, 250, 300, 40, 100)
+    player_health = 100
+    
+    enemy = pygame.Rect(enemy_icon_x, enemy_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
+
     while running:
+        
         handle_events()
+        health_bar.hp = player_health
+        player_damage(player, enemy)
         update_animation()
         move_icon()
+        enemy_pathfinding()
         calculate_camera_offset()
         draw_elements()
         draw_fps_counter()
-
         pygame.display.update()
         clock.tick(FPS)
 
