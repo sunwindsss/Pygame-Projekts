@@ -3,9 +3,11 @@ import spritesheet
 
 pygame.init()
 
-# Statiskie mainīgie
+# Static variables
 WIDTH = 1000
 HEIGHT = 800
+BACKGROUND_WIDTH = 5000
+BACKGROUND_HEIGHT = 5000
 PLAYER_WIDTH = 96
 PLAYER_HEIGHT = 96
 FPS = 60
@@ -19,24 +21,24 @@ BLUE = (0, 0, 255)
 MAGENTA = (255, 0, 255)
 YELLOW = (255, 255, 0)
 
-# Pamata iestatījumi saistībā ar spēles logu
+# Basic settings related to the game window
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-background_surface = pygame.Surface((WIDTH, HEIGHT))
+background_surface = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
 icon = pygame.image.load('images/icon.png')
 pygame.display.set_icon(icon)
 pygame.display.set_caption("ROGUELIKE STUFF")
 
-# Pulkstenis spēlei (object), lai regulētu FPS
+# Clock for controlling FPS
 clock = pygame.time.Clock()
 
-# Fonts FPS skaitītājam
+# Font for the FPS counter
 font = pygame.font.Font(None, 40)
 
 # Load background image
 background_image = pygame.image.load('images/grass_bg.png')
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 
-# Spēles statuss
+# Game status
 running = True
 
 # Initial position of the icon
@@ -48,15 +50,16 @@ speed = 4
 speed_linear = 4
 speed_diagonal = 2.828
 
+# Load sprite sheet image
 sprite_sheet_image = pygame.image.load('images/doux.png').convert_alpha()
 sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
 
-#create animation list
+# Create animation list
 animation_list = []
 animation_steps = [4, 6, 3, 4]
 action = 0
 last_update = pygame.time.get_ticks()
-animation_cooldown = 75
+animation_cooldown = 100
 frame = 0
 step_counter = 0
 
@@ -66,6 +69,10 @@ for animation in animation_steps:
         temp_img_list.append(sprite_sheet.get_image(step_counter, 24, 24, 4, BLACK))
         step_counter += 1
     animation_list.append(temp_img_list)
+
+# Create black background surface
+black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
+black_background.fill(BLACK)
 
 while running:
     for event in pygame.event.get():
@@ -81,7 +88,7 @@ while running:
     else:
         speed = speed_linear  # Reset speed for non-diagonal movement
 
-    #update animation
+    # Update animation
     current_time = pygame.time.get_ticks()
     if current_time - last_update >= animation_cooldown:
         frame += 1
@@ -89,8 +96,7 @@ while running:
         if frame >= len(animation_list[action]):
             frame = 0
 
-
-    #Move the icon based on the pressed keys
+    # Move the icon based on the pressed keys
     if keys[pygame.K_w] and icon_y > 0:
         icon_y -= speed
         action = 1
@@ -103,28 +109,29 @@ while running:
     if keys[pygame.K_d] and icon_x < WIDTH - PLAYER_WIDTH:
         icon_x += speed
         action = 1
-    if not keys[pygame.K_w] and not keys[pygame.K_a] and not keys[pygame.K_s] and not keys[pygame.K_d]:
+    if frame == 0:
         action = 0
-        frame = 0
 
     # Calculate the camera offset to keep the icon centered
     camera_x = icon_x - (WIDTH / 2) + (PLAYER_WIDTH/2)
     camera_y = icon_y - (HEIGHT / 2) + (PLAYER_HEIGHT/2)
 
-    # Draw the background with the camera offset
+    # Draw the BLACK background centered
+    screen.blit(black_background, (camera_x - (BACKGROUND_WIDTH/2), camera_y - (BACKGROUND_HEIGHT/2)))
+
+    # Draw the GRASS background with the camera offset
     screen.blit(background_image, (-camera_x, -camera_y))
 
     # Draw the icon at the new position
-    # screen.blit(pygame.transform.scale(icon, (PLAYER_WIDTH, PLAYER_HEIGHT)), (icon_x - camera_x, icon_y - camera_y))
     screen.blit(animation_list[action][frame], (icon_x - camera_x, icon_y - camera_y))
 
     # FPS counter
-    fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, BLACK)
+    fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, WHITE)
     screen.blit(fps_text, (10, 10))
-    
-    pygame.display.update()
 
-    # FPS limitācija
+    pygame.display.update()
+    
+    # FPS limitation
     clock.tick(FPS)
 
 # Quit pygame outside the loop
