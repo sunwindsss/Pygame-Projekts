@@ -44,6 +44,8 @@ running = True
 # Initial position of the icon
 icon_x = (screen.get_width() - PLAYER_WIDTH) / 2
 icon_y = (screen.get_height() - PLAYER_HEIGHT) / 2
+enemy_icon_x = 100
+enemy_icon_y = 100
 
 # Initial movement speed (coefficient 0.707)
 speed = 4
@@ -53,6 +55,12 @@ speed_diagonal = 2.828
 # Load sprite sheet image
 sprite_sheet_image = pygame.image.load('images/doux.png').convert_alpha()
 sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
+
+# Load enemy sprite sheet
+enemy_sprite_sheet_image = pygame.image.load('images/enemy1.png').convert_alpha()
+enemy_sprite_sheet = spritesheet.SpriteSheet(enemy_sprite_sheet_image)
+
+
 
 # Create animation list
 animation_list = []
@@ -69,6 +77,22 @@ for animation in animation_steps:
         temp_img_list.append(sprite_sheet.get_image(step_counter, 24, 24, 4, BLACK))
         step_counter += 1
     animation_list.append(temp_img_list)
+
+# Enemy animation list 
+enemy_animation_list = []
+enemy_animation_steps = [4, 6, 3, 4]
+enemy_action = 0
+enemy_last_update = pygame.time.get_ticks()
+enemy_animation_cooldown = 100
+enemy_frame = 0
+enemy_step_counter = 0
+
+for enemy_animation in enemy_animation_steps:
+    temp_img_list2 = []
+    for _ in range(enemy_animation):
+        temp_img_list2.append(enemy_sprite_sheet.get_image(enemy_step_counter, 24, 24, 4, BLACK))
+        enemy_step_counter += 1
+    enemy_animation_list.append(temp_img_list2)
 
 # Create black background surface
 black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
@@ -95,7 +119,13 @@ while running:
         last_update = current_time
         if frame >= len(animation_list[action]):
             frame = 0
-
+    # Update enemy animation
+    enemy_current_time = pygame.time.get_ticks()
+    if enemy_current_time - enemy_last_update >= enemy_animation_cooldown:
+        enemy_frame += 1
+        enemy_last_update = enemy_current_time
+        if enemy_frame >= len(enemy_animation_list[enemy_action]):
+            enemy_frame = 0
     # Move the icon based on the pressed keys
     if keys[pygame.K_w] and icon_y > 0:
         icon_y -= speed
@@ -117,13 +147,27 @@ while running:
     camera_y = icon_y - (HEIGHT / 2) + (PLAYER_HEIGHT/2)
 
     # Draw the BLACK background centered
-    screen.blit(black_background, (camera_x - (BACKGROUND_WIDTH/2) , camera_y - (BACKGROUND_HEIGHT/2)))
+    screen.blit(black_background, (camera_x - (BACKGROUND_WIDTH/2), camera_y - (BACKGROUND_HEIGHT/2)))
 
     # Draw the GRASS background with the camera offset
     screen.blit(background_image, (-camera_x, -camera_y))
 
+
     # Draw the icon at the new position
     screen.blit(animation_list[action][frame], (icon_x - camera_x, icon_y - camera_y))
+
+    #Draw enemy icon
+    screen.blit(enemy_animation_list[enemy_action][enemy_frame], (enemy_icon_x - camera_x, enemy_icon_y - camera_y))
+
+    #Enemy movement
+    if icon_x > enemy_icon_x:
+        enemy_icon_x += speed/2
+    if icon_x < enemy_icon_x:
+        enemy_icon_x -= speed/2
+    if icon_y > enemy_icon_y:
+        enemy_icon_y += speed/2
+    if icon_y < enemy_icon_y:
+        enemy_icon_y -= speed/2
 
     # FPS counter
     fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, WHITE)
