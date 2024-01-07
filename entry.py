@@ -161,9 +161,6 @@ while running:
     if keys[pygame.K_a] and icon_x > 0:
         icon_x -= speed
         action = 1
-    if keys[pygame.K_w] and icon_y > 0:
-        icon_y -= speed
-        action = 3
     # player model uses idle animations according to key released
     if sum(keys) == 0 and last_lift_up == pygame.K_w:
         action = 7
