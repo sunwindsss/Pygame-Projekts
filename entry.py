@@ -51,12 +51,13 @@ speed_linear = 4
 speed_diagonal = 2.828
 
 # Load sprite sheet image
-sprite_sheet_image = pygame.image.load('images/doux_upgrade.png').convert_alpha()
+sprite_sheet_image = pygame.image.load('images/spritesheet.png').convert_alpha()
 sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
 
 # Create animation list
 animation_list = []
-animation_steps = [6, 6, 3, 4, 6]
+#animation types
+animation_steps = [4, 4, 4, 4]
 last_update = pygame.time.get_ticks()
 animation_cooldown = 100
 action = 0
@@ -66,7 +67,7 @@ step_counter = 0
 for animation in animation_steps:
     temp_img_list = []
     for _ in range(animation):
-        temp_img_list.append(sprite_sheet.get_image(step_counter, 24, 24, 4, BLACK))
+        temp_img_list.append(sprite_sheet.get_image(step_counter, 64, 64, 2, BLACK))
         step_counter += 1
     animation_list.append(temp_img_list)
 
@@ -99,18 +100,18 @@ while running:
     # Move the icon based on the pressed keys
     if keys[pygame.K_w] and icon_y > 0:
         icon_y -= speed
-        action = 1
+        action = 3
     if keys[pygame.K_s] and icon_y < HEIGHT - PLAYER_HEIGHT:
         icon_y += speed
-        action = 1
+        action = 0
     if keys[pygame.K_d] and icon_x < WIDTH - PLAYER_WIDTH:
         icon_x += speed
-        action = 1
+        action = 2
     if keys[pygame.K_a] and icon_x > 0:
         icon_x -= speed
-        action = 4
+        action = 1
     if sum(keys) == 0:
-        action = 0
+        frame = 0
 
     # Calculate the camera offset to keep the icon centered
     camera_x = icon_x - (WIDTH / 2) + (PLAYER_WIDTH/2)
