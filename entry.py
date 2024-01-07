@@ -61,8 +61,8 @@ def initialize_game():
 
     # Create animation list
     animation_list = []
-    # animation type list 0 - 3 is walking and 4 - 7 is idle animations
-    animation_steps = [6, 6, 6, 6, 6, 6, 6, 6]
+    # animation type list 0 - 3 is walking and 4 - 7 is idle animations 8 - 11 is attacking animations
+    animation_steps = [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
     last_update = pygame.time.get_ticks()
     animation_cooldown = 150
     # animation that will be set as default when the game starts
@@ -110,6 +110,17 @@ def move_icon():
         speed = speed_diagonal  # Reduce speed for diagonal movement
     else:
         speed = speed_linear  # Reset speed for non-diagonal movement
+
+    #shooting animation
+    if keys[pygame.K_k]:
+        if last_lift_up == pygame.K_w:
+            action = 11
+        elif last_lift_up == pygame.K_s:
+            action = 8
+        elif last_lift_up == pygame.K_a:
+            action = 9
+        elif last_lift_up == pygame.K_d:
+            action = 10
 
     if keys[pygame.K_s] and icon_y < HEIGHT - PLAYER_HEIGHT:
         icon_y += speed
