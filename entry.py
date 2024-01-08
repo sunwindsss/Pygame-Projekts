@@ -496,6 +496,9 @@ def main_loop():
         calculate_camera_offset()
         draw_elements(enemy1, enemy2, enemy3, animation_list1, animation_list2, animation_list3)
         draw_fps_counter()
+
+        if player_health<100:
+            player_health += 0.1
         pygame.display.update()
         clock.tick(FPS)
 
