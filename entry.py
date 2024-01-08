@@ -8,13 +8,12 @@ def set_static_variables():
     """
     global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS, speed, speed_linear, speed_diagonal
     WIDTH, HEIGHT = 1000, 800
-    BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 100, 100 # For the black background (temporary numbers)
+    BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 100, 100 # Black background size (UNUSED!!)
     PLAYER_WIDTH, PLAYER_HEIGHT = 144, 144 # Attached to some settings in regards to player location on screen
     FPS = 60 # Framerate value for game
     speed = 4
     speed_linear = 4
     speed_diagonal = 2.828 # Coefficient 0.707 in regards to linear speed
-
 
 def set_color_codes():
     """
@@ -63,8 +62,8 @@ def load_images():
     #background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT)) # NOT USED ANYMORE
     sprite_sheet_image = pygame.image.load('images/player.png').convert_alpha()
     sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
-    black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
-    black_background.fill(BLACK)
+    black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT)) # NOT USED ANYMORE
+    black_background.fill(BLACK) # NOT USED ANYMORE
 
 def load_background_tiles():
     """
