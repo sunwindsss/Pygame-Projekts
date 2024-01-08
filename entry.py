@@ -103,6 +103,75 @@ def select_tile_index():
     tiles = list(range(10))  # Tile indices from 0 to 9
     return random.choices(tiles, weights=chances, k=1)[0]
 
+def load_game_over_assets():
+    """
+    Load images and sounds for the game over screen.
+    """
+    global gameover_img, mainmenu_imgs, restart_imgs, backquit_sound, start_sound
+    gameover_img = pygame.image.load('images/gameover.png').convert_alpha()
+    gameover_img = pygame.transform.scale(gameover_img, (WIDTH, HEIGHT))
+
+    mainmenu_imgs = [pygame.image.load(f'images/mainmenu-{i}.png').convert_alpha() for i in range(1, 4)]
+    restart_imgs = [pygame.image.load(f'images/restart-{i}.png').convert_alpha() for i in range(1, 4)]
+
+    backquit_sound = pygame.mixer.Sound('sounds/backquit.ogg')
+    start_sound = pygame.mixer.Sound('sounds/start.ogg')
+
+    start_sound.set_volume(0.1)
+    backquit_sound.set_volume(0.1)
+
+def game_over_screen():
+    """
+    Displays the game over screen with interactive buttons.
+    """
+    global running, score
+    mainmenu_rect = pygame.Rect((WIDTH // 2 - 150, HEIGHT // 2 + 50), (300, 100))
+    restart_rect = pygame.Rect((WIDTH // 2 - 125, HEIGHT // 2 + 200), (250, 100))
+
+    while True:
+        screen.blit(gameover_img, (0, 0))
+
+        score_text = font.render(f"Score: {int(score)}", True, WHITE)
+        screen.blit(score_text, (WIDTH // 2 - 50, HEIGHT // 2 - 50))
+
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_click = False
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    mouse_click = True
+
+        if mainmenu_rect.collidepoint(mouse_pos):
+            screen.blit(mainmenu_imgs[1], mainmenu_rect.topleft)
+            if mouse_click:
+                screen.blit(mainmenu_imgs[2], mainmenu_rect.topleft)
+                backquit_sound.play()
+                pygame.time.delay(100)  # Delay to see the image
+                import start_here  # Import the script containing the main menu
+                start_here.main_menu()  # Assuming this is the function to call
+                break
+        else:
+            screen.blit(mainmenu_imgs[0], mainmenu_rect.topleft)
+
+        if restart_rect.collidepoint(mouse_pos):
+            screen.blit(restart_imgs[1], restart_rect.topleft)
+            if mouse_click:
+                screen.blit(restart_imgs[2], restart_rect.topleft)
+                start_sound.play()
+                pygame.time.delay(100)  # Delay to see the image
+                start_game()  # Restart the game
+                break
+        else:
+            screen.blit(restart_imgs[0], restart_rect.topleft)
+
+        pygame.display.update()
+        clock.tick(FPS)
+
+
 def create_animation_list():
     """
     Creates a list of sprite animations for the player
@@ -160,6 +229,7 @@ def initialize_game():
     set_basic_settings()
     load_images()
     load_background_tiles()
+    load_game_over_assets()
     create_animation_list()
     animation_list1 = create_enemy_animation_list(enemy_sprite_sheet1)
     animation_list2 = create_enemy_animation_list(enemy_sprite_sheet2)
@@ -431,7 +501,6 @@ def main_loop():
     Runs the main game loop and processes game events.
     The loop continues until the global variable `running` becomes False, and then quits the game.
     """
-
     global running,player_health, player, health_bar, enemy1_health, enemy2_health, enemy3_health, score
 
     player = pygame.Rect(icon_x, icon_y, PLAYER_WIDTH/3,PLAYER_HEIGHT/2)
@@ -482,6 +551,9 @@ def main_loop():
             enemy3_icon_y = enemy3_coordinate[1]
             enemy3_health = 20
             enemy3 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
+        if player_health <= 0:
+            game_over_screen()
+            break
         handle_events()
         health_bar.hp = player_health
         player_damage(player, enemy1, enemy2, enemy3)
