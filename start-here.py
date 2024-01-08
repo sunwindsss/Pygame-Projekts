@@ -3,6 +3,11 @@ import sys
 import entry  # Game code module
 
 def main_menu():
+    """
+    Handles main game menu functionality.
+    Loads every image associated with the main menu and sets up display proportions for the buttons.
+    Handles button clicks and animation events for button presses.
+    """
     pygame.init()
     WIDTH, HEIGHT = 1000, 800
     screen = pygame.display.set_mode((WIDTH, HEIGHT))

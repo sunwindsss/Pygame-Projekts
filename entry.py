@@ -298,7 +298,7 @@ def main_loop():
 
 def start_game():
     """
-    Starts the main game initialization and loops when the game is started through the main menu.
+    Starts the main game initialization.
     """
     initialize_game()
     main_loop()
