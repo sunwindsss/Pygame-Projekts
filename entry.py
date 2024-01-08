@@ -3,39 +3,63 @@ import spritesheet
 import random
 
 def set_static_variables():
+    """
+    Initializes some basic game variables.
+    """
     global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS, speed, speed_linear, speed_diagonal
     WIDTH, HEIGHT = 1000, 800
-    BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 5000, 5000
-    PLAYER_WIDTH, PLAYER_HEIGHT = 144, 144
-    FPS = 60
-    speed = 4 # Coefficient 0.707
+    BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 100, 100 # Black background size (UNUSED!!)
+    PLAYER_WIDTH, PLAYER_HEIGHT = 144, 144 # Attached to some settings in regards to player location on screen
+    FPS = 60 # Framerate value for game
+    speed = 4
     speed_linear = 4
-    speed_diagonal = 2.828
-
+    speed_diagonal = 2.828 # Coefficient 0.707 in regards to linear speed
 
 def set_color_codes():
+    """
+    Initializes global color code variables.
+    """
     global BLACK, WHITE, RED, GREEN, BLUE, MAGENTA, YELLOW
     BLACK, WHITE = (0, 0, 0), (255, 255, 255)
     RED, GREEN, BLUE = (255, 0, 0), (0, 255, 0), (0, 0, 255)
     MAGENTA, YELLOW = (255, 0, 255), (255, 255, 0)
 
 def set_basic_settings():
+    """
+    Initializes basic settings for the game.
+
+    Global variables:
+        screen: Pygame display surface
+        background_surface: Pygame surface for background
+        icon: Pygame surface for the game icon
+        clock: Pygame clock for controlling the frame rate
+        font: Font for the FPS counter
+        running: Game status variable (True if the game is running, False if it's not)
+        icon_x, icon_y: Initial coordinates of the player icon
+    """
     global screen, background_surface, icon, clock, font, running, icon_x, icon_y
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     background_surface = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
     icon = pygame.image.load('images/icon.png')
     pygame.display.set_icon(icon)
-    pygame.display.set_caption("ROGUELIKE STUFF")
+    pygame.display.set_caption("IKONIKS -- SPĒLES REŽĪMS!")
     clock = pygame.time.Clock()
-    font = pygame.font.Font(None, 40) # Font for FPS counter
+    font = pygame.font.Font(None, 40)
     running = True
-    icon_x, icon_y = (screen.get_width() - PLAYER_WIDTH) / 2, (screen.get_height() - PLAYER_HEIGHT) / 2
+    icon_x, icon_y = (screen.get_width() - PLAYER_WIDTH) / 2, (screen.get_height() - PLAYER_HEIGHT) / 2 
 
 def load_images():
-    global background_image, sprite_sheet, black_background, enemy_sprite_sheet1, enemy_sprite_sheet2
-    background_image = pygame.image.load('images/grass_bg.png')
-    background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+    """
+    Load and initialize game images (temporary black background, spritesheets, etc.).
 
+    Global variables:
+        sprite_sheet: SpriteSheet object for managing player sprite animations
+        black_background: Surface for black background (temporary)
+    """
+    global sprite_sheet, black_background, enemy_sprite_sheet1, enemy_sprite_sheet2
+    #global background_image # NOT USED ANYMORE
+    #background_image = pygame.image.load('images/grass_bg.png') # NOT USED ANYMORE
+    #background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT)) # NOT USED ANYMORE
     sprite_sheet_image = pygame.image.load('images/player.png').convert_alpha()
     sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
 
@@ -45,18 +69,55 @@ def load_images():
     enemy_sprite_sheet_image2 = pygame.image.load('images/doux_upgrade.png').convert_alpha()
     enemy_sprite_sheet2 = spritesheet.SpriteSheet(enemy_sprite_sheet_image2)
 
-    black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
-    black_background.fill(BLACK)
+    black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT)) # NOT USED ANYMORE
+    black_background.fill(BLACK) # NOT USED ANYMORE
+
+def load_background_tiles():
+    """
+    Loads and scales all background tile images from the 'images' directory.
+    Populates the global 'background_tiles' list with each tile image.
+    Images 'bg-1.png' to 'bg-10.png' are loaded in that order.
+
+    Global variables:
+        background_tiles: List of loaded background tile images.
+    """
+    global background_tiles
+    background_tiles = []
+    for i in range(1, 11):
+        image = pygame.image.load(f'images/bg-{i}.png').convert()
+        image = pygame.transform.scale(image, (WIDTH, HEIGHT))
+        background_tiles.append(image)
+
+def select_tile_index():
+    """
+    Randomly selects an index for a background tile based on predefined probabilities.
+    Uses weighted random selection to choose an index, corresponding to a specific background tile.
+
+    Returns:
+        integer: The selected tile index.
+    """
+    chances = [40] + [10] * 4 + [7] * 2 + [3] * 3 # Change probabilities for each image if needed!
+    tiles = list(range(10))  # Tile indices from 0 to 9
+    return random.choices(tiles, weights=chances, k=1)[0]
 
 def create_animation_list():
-    global animation_list, action, frame, step_counter, last_update, animation_cooldown, last_lift_up
+    """
+    Creates a list of sprite animations for the player
+    based on the number of steps in each animation.
+    Extracts images from the sprite sheet for each animation sequence.
+    """
+    global animation_list, action, frame, step_counter, last_update, animation_cooldown, last_lift_up, animation_completed
     animation_list = []
-    animation_steps = [6, 6, 6, 6, 6, 6, 6, 6]
-    last_update = pygame.time.get_ticks()
+    animation_steps = [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
+    last_update = pygame.time.get_ticks() # Controls animation speed
     animation_cooldown = 150
-    action, frame, step_counter = 4, 0, 0
-    last_lift_up = None
+    action = 4 # Animation that will be set as default when game starts
+    frame = 0
+    step_counter = 0 # Each step is one frame in the animation
+    last_lift_up = pygame.K_s
+    animation_completed = False
 
+    # Splits the spritesheet into frames
     for animation in animation_steps:
         temp_img_list = []
         for _ in range(animation):
@@ -85,12 +146,17 @@ def create_enemy_animation_list(enemy_sprite_sheet):
     return enemy_animation_list
 
 def initialize_game():
-    global animation_list1, animation_list2
+    """
+    Initializes important game functions.
+    """
+    global tile_grid, animation_list1, animation_list2
+    tile_grid = {}  # Dictionary to keep track of which tiles are loaded
     pygame.init()
     set_static_variables()
     set_color_codes()
     set_basic_settings()
     load_images()
+    load_background_tiles()
     create_animation_list()
     animation_list1 = create_enemy_animation_list(enemy_sprite_sheet1)
     animation_list2 = create_enemy_animation_list(enemy_sprite_sheet2)
@@ -98,7 +164,18 @@ def initialize_game():
 PLAYER_HIT = pygame.USEREVENT + 1
 ENEMY_HIT1 = pygame.USEREVENT + 2
 ENEMY_HIT2 = pygame.USEREVENT + 3
+
 def handle_events():
+    """
+    Iterates through all Pygame events, such as key presses or closing the game window,
+    and updates global variables. 
+    
+    Handles the QUIT event and KEYUP (last key lifted) event.
+
+    Global variables:
+        running: Game status
+        last_lift_up: The last key that was released
+    """
     global running, last_lift_up, player_health, enemy1_health, enemy2_health
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -115,16 +192,23 @@ def handle_events():
 
 
 def update_animation():
-    global frame, last_update, animation_cooldown, action
+    """
+    Advances the animation frame based on a specified cooldown time.
+    Ensures that the animation frames cycle through the available frames for
+    the current action. The animation updates are synchronized with the game's time.
+    """
+    global frame, last_update, animation_cooldown, animation_completed, action
 
-    # Update player animations
     current_time = pygame.time.get_ticks()
+
     if current_time - last_update >= animation_cooldown:
-        frame += 1
-        last_update = current_time
-        if frame >= len(animation_list[action]):
-            frame = 0
-            
+        if not animation_completed:
+            frame += 1
+            last_update = current_time
+            if frame >= len(animation_list[action]):
+                frame = 0
+                animation_completed = True
+
 def update_enemy_animation():
     global enemy_frame, enemy_last_update, enemy_animation_cooldown, enemy_action
     # Update enemy animations
@@ -136,30 +220,43 @@ def update_enemy_animation():
             enemy_frame = 0 
 
 def move_icon():
-    global player, action
+    """
+    Moves the player based on keyboard inputs.
+    Adjusts animations based on keyboard inputs.
+
+    Updates the player's position based on the keys pressed,
+    adjusting the speed for diagonal or linear movement. 
+    Determines the appropriate animation sequence to use based on the direction of movement.
+    """
+    global icon_x, icon_y, player, action, frame, animation_completed
     keys = pygame.key.get_pressed()
 
     # Adjust speed based on linear or diagonal movement
     if (keys[pygame.K_w] or keys[pygame.K_s]) and (keys[pygame.K_a] or keys[pygame.K_d]):
         speed = speed_diagonal  # Reduce speed for diagonal movement
     else:
-        speed = speed_linear  # Reset speed for non-diagonal movement
+        speed = speed_linear  # Adjust speed for non-diagonal movement
 
-    if keys[pygame.K_s] and player.y < HEIGHT - PLAYER_HEIGHT:
+    # Move the icon based on the pressed keys and use appropriate animations
+    if keys[pygame.K_s]:
         player.y += speed
         action = 0
-    if keys[pygame.K_d] and player.x < WIDTH - PLAYER_WIDTH:
+        animation_completed = False
+    if keys[pygame.K_d]:
         player.x += speed
         action = 2
-    if keys[pygame.K_a] and player.x > 0:
+        animation_completed = False
+    if keys[pygame.K_a]:
         player.x -= speed
         action = 1
-    if keys[pygame.K_w] and player.y > 0:
+        animation_completed = False
+    if keys[pygame.K_w]:
         player.y -= speed
         action = 3
+        animation_completed = False
 
-
-    if sum(keys) == 0:
+    if sum(keys) == 0 and last_lift_up != pygame.K_SPACE:
+        animation_completed = False
         if last_lift_up == pygame.K_w:
             action = 7
         elif last_lift_up == pygame.K_s:
@@ -168,6 +265,49 @@ def move_icon():
             action = 5
         elif last_lift_up == pygame.K_d:
             action = 6
+    
+    if keys[pygame.K_SPACE] and not keys[pygame.K_w] and not keys[pygame.K_s] and not keys[pygame.K_a] and not keys[pygame.K_d]:
+        animation_completed = False
+        if last_lift_up == pygame.K_w:
+            action = 11
+        elif last_lift_up == pygame.K_s:
+            action = 8
+        elif last_lift_up == pygame.K_a:
+            action = 9
+        elif last_lift_up == pygame.K_d:
+            action = 10
+    
+def get_background_tiles():
+    """
+    Calculates which background tiles are needed based on the player's position.
+    The function creates a list of tiles to be drawn, each with its position and
+    randomly selected index.
+    Eensures that the same tile is not redrawn and maintains a grid of loaded tiles.
+
+    Global variables:
+        tile_grid: Dictionary tracking the loaded tiles on the grid.
+
+    Returns:
+        list: List of tuples, where each tuple contains the x and y coordinates of the tile
+        and the index of the tile image to be used.
+    """
+    global tile_grid
+    tiles = []
+    start_x = int(player.x // WIDTH) * WIDTH
+    start_y = int(player.y // HEIGHT) * HEIGHT
+
+    for x in range(start_x - WIDTH, start_x + 2 * WIDTH, WIDTH):
+        for y in range(start_y - HEIGHT, start_y + 2 * HEIGHT, HEIGHT):
+            grid_x, grid_y = x // WIDTH, y // HEIGHT
+
+            # If the tile is not already in the grid, select a new tile
+            if (grid_x, grid_y) not in tile_grid:
+                tile_index = select_tile_index()
+                tile_grid[(grid_x, grid_y)] = tile_index
+
+            tiles.append((x, y, tile_grid[(grid_x, grid_y)]))
+
+    return tiles
 # Enemy stuff
 def enemy_pathfinding(enemy, player):
     global enemy_action
@@ -204,19 +344,47 @@ def enemy_spawn():
             return x, y 
 
 def calculate_camera_offset():
+    """
+    Moves the camera by adjusting coordinates each frame.
+    Updates global variables `camera_x` and `camera_y` to determine
+    the offset needed for the camera to follow the player while staying centered.
+    """
     global camera_x, camera_y
     camera_x = player.x - (WIDTH / 2) + (PLAYER_WIDTH / 2)
     camera_y = player.y - (HEIGHT / 2) + (PLAYER_HEIGHT / 2)
 
 def draw_elements(enemy1, enemy2, enemy_animation_list1, enemy_animation_list2):
-    screen.blit(black_background, (camera_x - (BACKGROUND_WIDTH / 2), camera_y - (BACKGROUND_HEIGHT / 2)))
-    screen.blit(background_image, (-camera_x, -camera_y))
+
+    """
+    Draws the necessary background tiles and the player icon on the screen.
+    Fetches the required tiles from 'get_background_tiles' and
+    then draws them on the screen. 
+    It also places the player icon at its current position.
+
+    Global variables:
+        background_tiles: List of loaded background tile images.
+        animation_list: List of player animation frames.
+        action: Current action (animation) for player.
+        frame: Current frame for the player animation.
+        icon_x, icon_y: Current x and y coordinates of the player.
+        camera_x, camera_y: Current x and y coordinates of the camera.
+    """
+
+    tiles = get_background_tiles()
+    for tile in tiles:
+        x, y, tile_index = tile
+        screen.blit(background_tiles[tile_index], (x - camera_x, y - camera_y))
+    #screen.blit(animation_list[action][frame], (icon_x - camera_x, icon_y - camera_y))
     screen.blit(enemy_animation_list1[enemy_action][enemy_frame], (enemy1.x - camera_x + 28, enemy1.y - camera_y + 28))
     screen.blit(enemy_animation_list2[enemy_action][enemy_frame], (enemy2.x - camera_x + 28, enemy2.y - camera_y + 28))
     screen.blit(animation_list[action][frame], (player.x - camera_x, player.y - camera_y))
     health_bar.draw(screen)
 
 def draw_fps_counter():
+    """
+    Renders the current frames per second (FPS) on the screen using
+    the specified font and displays it at the top-left corner of the game window.
+    """
     fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, WHITE)
     screen.blit(fps_text, (10, 10))
 
@@ -245,6 +413,11 @@ class HealthBar():
         pygame.draw.rect(screen, GREEN, (WIDTH/2 - 23, HEIGHT/2 - 60, 50 * ratio, 10))
     
 def main_loop():
+    """
+    Runs the main game loop and processes game events.
+    The loop continues until the global variable `running` becomes False, and then quits the game.
+    """
+
     global running,player_health, player, health_bar, enemy1_health, enemy2_health
 
     enemy1_coordinate = enemy_spawn()
@@ -301,6 +474,13 @@ def main_loop():
 
     pygame.quit()
 
-if __name__ == "__main__":
+def start_game():
+    """
+    Starts the main game initialization.
+    """
     initialize_game()
     main_loop()
+
+# Check if this script is being run directly (not imported as a module)
+if __name__ == "__main__":
+    start_game()
