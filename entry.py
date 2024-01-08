@@ -151,16 +151,16 @@ def move_icon():
         speed = speed_linear  # Adjust speed for non-diagonal movement
 
     # Move the icon based on the pressed keys and use appropriate animations
-    if keys[pygame.K_s] and icon_y < HEIGHT - PLAYER_HEIGHT:
+    if keys[pygame.K_s]:
         icon_y += speed
         action = 0
-    if keys[pygame.K_d] and icon_x < WIDTH - PLAYER_WIDTH:
+    if keys[pygame.K_d]:
         icon_x += speed
         action = 2
-    if keys[pygame.K_a] and icon_x > 0:
+    if keys[pygame.K_a]:
         icon_x -= speed
         action = 1
-    if keys[pygame.K_w] and icon_y > 0:
+    if keys[pygame.K_w]:
         icon_y -= speed
         action = 3
 
@@ -174,6 +174,21 @@ def move_icon():
         elif last_lift_up == pygame.K_d:
             action = 6
 
+def get_background_tiles():
+    """
+    Calculates which background tiles are needed based on the player's position.
+    """
+    tiles = []
+    tile_size = WIDTH, HEIGHT  # Each tile should match the size of the window width and height
+    start_x = int(icon_x // WIDTH) * WIDTH
+    start_y = int(icon_y // HEIGHT) * HEIGHT
+
+    for x in range(start_x - WIDTH, start_x + 2 * WIDTH, WIDTH):
+        for y in range(start_y - HEIGHT, start_y + 2 * HEIGHT, HEIGHT):
+            tiles.append((x, y))
+    
+    return tiles
+
 def calculate_camera_offset():
     """
     Moves the camera by adjusting coordinates each frame.
@@ -186,12 +201,15 @@ def calculate_camera_offset():
 
 def draw_elements():
     """
-    Uses Pygame's `blit` method to draw different elements on the screen,
-    including the black background, game background, and the current frame of player animation.
+    Uses Pygame's `blit` method to draw different elements on the screen.
+    Draws the necessary background tiles on the screen, creating an illusion of an infinite map.
     The drawing is adjusted based on the calculated camera offset.
+    Additionally draws the current frame of player animation.
     """
-    screen.blit(black_background, (camera_x - (BACKGROUND_WIDTH / 2), camera_y - (BACKGROUND_HEIGHT / 2)))
-    screen.blit(background_image, (-camera_x, -camera_y))
+    tiles = get_background_tiles()
+    for tile in tiles:
+        screen.blit(background_image, (tile[0] - camera_x, tile[1] - camera_y))
+
     screen.blit(animation_list[action][frame], (icon_x - camera_x, icon_y - camera_y))
 
 def draw_fps_counter():
