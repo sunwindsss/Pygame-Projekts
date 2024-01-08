@@ -3,6 +3,33 @@ import sys
 import entry  # Game code module
 import time  # For delay
 
+# Function to load sounds
+def load_sounds():
+    """
+    Loads sound effects and music for the game.
+    """
+    global menu_music, game_music, start_sound, infocredits_sound, backquit_sound
+    pygame.mixer.init()  # Initialize the mixer module
+
+    # Load sound effects
+    start_sound = pygame.mixer.Sound('sounds/start.ogg')
+    infocredits_sound = pygame.mixer.Sound('sounds/infocredits.ogg')
+    backquit_sound = pygame.mixer.Sound('sounds/backquit.ogg')
+
+    # Load and play background music
+    menu_music = pygame.mixer.Sound('sounds/menu-music.mp3')
+    game_music = pygame.mixer.Sound('sounds/game-music.mp3')
+
+    # Volume settings for the sounds
+    start_sound.set_volume(0.1)
+    infocredits_sound.set_volume(0.1)
+    backquit_sound.set_volume(0.1)
+    menu_music.set_volume(0.1)
+    game_music.set_volume(0.1)
+
+    menu_music.play(-1)  # The '-1' argument makes the music play indefinitely
+
+
 def main_menu():
     """
     Handles main menu functionality.
@@ -15,6 +42,8 @@ def main_menu():
     icon = pygame.image.load('images/icon.png')
     pygame.display.set_icon(icon)
     pygame.display.set_caption("IKONIKS")
+    
+    load_sounds()  # Load sounds and start playing menu music
 
     # Load images
     mainmenu = pygame.image.load('images/mainmenu.png')
@@ -65,13 +94,19 @@ def main_menu():
                         pygame.display.update()
                         time.sleep(0.1)  # 100ms delay
                         if button_name == "start" and not (show_info or show_credits):
+                            start_sound.play()
+                            menu_music.stop()
+                            game_music.play(-1)
                             running = False
                             entry.start_game()  # Start the game from entry.py
                         elif button_name == "info":
+                            infocredits_sound.play()
                             show_info = True
                         elif button_name == "credits":
+                            infocredits_sound.play()
                             show_credits = True
                         elif button_name == "close" and (show_info or show_credits):
+                            backquit_sound.play()
                             show_info = False
                             show_credits = False
                         elif button_name == "quit" and not (show_info or show_credits):
