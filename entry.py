@@ -262,11 +262,11 @@ def handle_events():
         elif event.type == PLAYER_HIT:
             player_health -= 1
         elif event.type == ENEMY_HIT1:
-            enemy1_health -= 20
+            enemy1_health -= 1
         elif event.type == ENEMY_HIT2:
-            enemy2_health -= 20
+            enemy2_health -= 1
         elif event.type == ENEMY_HIT3:
-            enemy3_health -= 20
+            enemy3_health -= 1
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE and len(player_arrows) < MAX_ARROWS:
