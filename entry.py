@@ -460,6 +460,7 @@ def main_loop():
     enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
     enemy3 = pygame.Rect(enemy3_icon_x, enemy3_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
+    game_over = False
     while running:
         if enemy1_health == 0:
             score += 1
@@ -481,7 +482,7 @@ def main_loop():
             enemy3_icon_x = enemy3_coordinate[0]
             enemy3_icon_y = enemy3_coordinate[1]
             enemy3_health = 20
-            enemy3 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
+            enemy3 = pygame.Rect(enemy3_icon_x, enemy3_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
         handle_events()
         health_bar.hp = player_health
         player_damage(player, enemy1, enemy2, enemy3)

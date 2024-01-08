@@ -26,6 +26,7 @@ def main_menu():
     close_buttons = [pygame.image.load(f'images/close-{i}.png') for i in range(1, 4)]  # Close button variations
     info_bg = pygame.image.load('images/info-bg.png')
     credits_bg = pygame.image.load('images/credits-bg.png')
+    game_over = pygame.image.load('images/credits-bg.png')
 
     # Rectangles for buttons and images
     titlecard_rect = titlecard.get_rect(center=(WIDTH / 2, HEIGHT / 4))
