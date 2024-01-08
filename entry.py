@@ -329,11 +329,11 @@ def enemy_pathfinding(enemy, player):
     if player.y < enemy.y:
         enemy.y -= speed/2
 
-def enemy_spawn():
-    square_top_left_x = 0
-    square_top_left_y = 0
-    square_bottom_right_x = WIDTH
-    square_bottom_right_y = HEIGHT
+def enemy_spawn(player):
+    square_top_left_x = player.x - 500
+    square_top_left_y = player.y - 400
+    square_bottom_right_x = player.x + 500
+    square_bottom_right_y = player.y + 400
     while True:
         # Generate random x and y coordinates outside the square
         x = random.uniform(square_top_left_x - 100, square_bottom_right_x + 100)
@@ -386,7 +386,9 @@ def draw_fps_counter():
     the specified font and displays it at the top-left corner of the game window.
     """
     fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, WHITE)
+    score_text = font.render(f"Score: {int(score)}", True, WHITE)
     screen.blit(fps_text, (10, 10))
+    screen.blit(score_text, (10, 45))
 
 def player_damage(player, enemy1, enemy2):
     if player.colliderect(enemy1):
@@ -418,45 +420,43 @@ def main_loop():
     The loop continues until the global variable `running` becomes False, and then quits the game.
     """
 
-    global running,player_health, player, health_bar, enemy1_health, enemy2_health
-
-    enemy1_coordinate = enemy_spawn()
-    enemy1_icon_x = enemy1_coordinate[0]
-    enemy1_icon_y = enemy1_coordinate[1]
-    enemy1_health = 50
-    enemy1_count = 0
-
-    enemy2_coordinate = enemy_spawn()
-    enemy2_icon_x = enemy2_coordinate[0]
-    enemy2_icon_y = enemy2_coordinate[1]
-    enemy2_health = 50
-    enemy2_count = 0
+    global running,player_health, player, health_bar, enemy1_health, enemy2_health, score
 
     player = pygame.Rect(icon_x, icon_y, PLAYER_WIDTH/3,PLAYER_HEIGHT/2)
     health_bar = HealthBar(250, 250, 300, 40, 100)
     player_health = 100
 
-    
+
+    enemy1_coordinate = enemy_spawn(player)
+    enemy1_icon_x = enemy1_coordinate[0]
+    enemy1_icon_y = enemy1_coordinate[1]
+    enemy1_health = 20
+
+    enemy2_coordinate = enemy_spawn(player)
+    enemy2_icon_x = enemy2_coordinate[0]
+    enemy2_icon_y = enemy2_coordinate[1]
+    enemy2_health = 20
+
+    score = 0
+
     enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
     enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
     while running:
         if enemy1_health == 0:
-            enemy1_count += 1
-            enemy1_coordinate = enemy_spawn()
+            score += 1
+            enemy1_coordinate = enemy_spawn(player)
             enemy1_icon_x = enemy1_coordinate[0]
             enemy1_icon_y = enemy1_coordinate[1]
-            enemy1_health = 50
+            enemy1_health = 20
             enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
-            print(enemy1_count)
         if enemy2_health == 0:
-            enemy2_count +=1
-            enemy2_coordinate = enemy_spawn()
+            score +=1
+            enemy2_coordinate = enemy_spawn(player)
             enemy2_icon_x = enemy2_coordinate[0]
             enemy2_icon_y = enemy2_coordinate[1]
-            enemy2_health = 50
+            enemy2_health = 20
             enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
-            print(enemy2_count)
         handle_events()
         health_bar.hp = player_health
         player_damage(player, enemy1, enemy2)
