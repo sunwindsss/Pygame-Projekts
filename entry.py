@@ -507,7 +507,7 @@ def main_loop():
 
     player = pygame.Rect(icon_x, icon_y, PLAYER_WIDTH/3,PLAYER_HEIGHT/2)
     health_bar = HealthBar(250, 250, 300, 40, 100)
-    player_health = 250
+    player_health = 100
 
 
     enemy1_coordinate = enemy_spawn(player)
