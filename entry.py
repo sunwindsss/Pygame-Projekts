@@ -81,16 +81,19 @@ def create_enemy_animation_list(enemy_sprite_sheet):
             temp_img_list2.append(enemy_sprite_sheet.get_image(enemy_step_counter, 24, 24, 4, BLACK))
             enemy_step_counter += 1
         enemy_animation_list.append(temp_img_list2)
+    
+    return enemy_animation_list
 
 def initialize_game():
+    global animation_list1, animation_list2
     pygame.init()
     set_static_variables()
     set_color_codes()
     set_basic_settings()
     load_images()
     create_animation_list()
-    create_enemy_animation_list(enemy_sprite_sheet1)
-    create_enemy_animation_list(enemy_sprite_sheet2)
+    animation_list1 = create_enemy_animation_list(enemy_sprite_sheet1)
+    animation_list2 = create_enemy_animation_list(enemy_sprite_sheet2)
 
 PLAYER_HIT = pygame.USEREVENT + 1
 def handle_events():
@@ -200,11 +203,11 @@ def calculate_camera_offset():
     camera_x = player.x - (WIDTH / 2) + (PLAYER_WIDTH / 2)
     camera_y = player.y - (HEIGHT / 2) + (PLAYER_HEIGHT / 2)
 
-def draw_elements(enemy1, enemy2):
+def draw_elements(enemy1, enemy2, enemy_animation_list1, enemy_animation_list2):
     screen.blit(black_background, (camera_x - (BACKGROUND_WIDTH / 2), camera_y - (BACKGROUND_HEIGHT / 2)))
     screen.blit(background_image, (-camera_x, -camera_y))
-    screen.blit(enemy_animation_list[enemy_action][enemy_frame], (enemy1.x - camera_x + 28, enemy1.y - camera_y + 28))
-    screen.blit(enemy_animation_list[enemy_action][enemy_frame], (enemy2.x - camera_x + 28, enemy2.y - camera_y + 28))
+    screen.blit(enemy_animation_list1[enemy_action][enemy_frame], (enemy1.x - camera_x + 28, enemy1.y - camera_y + 28))
+    screen.blit(enemy_animation_list2[enemy_action][enemy_frame], (enemy2.x - camera_x + 28, enemy2.y - camera_y + 28))
     screen.blit(animation_list[action][frame], (player.x - camera_x, player.y - camera_y))
     health_bar.draw(screen)
 
@@ -260,7 +263,7 @@ def main_loop():
         enemy_pathfinding(enemy1, player)
         enemy_pathfinding(enemy2, player)
         calculate_camera_offset()
-        draw_elements(enemy1, enemy2)
+        draw_elements(enemy1, enemy2, animation_list1, animation_list2)
         draw_fps_counter()
         pygame.display.update()
         clock.tick(FPS)
