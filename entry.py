@@ -1,5 +1,6 @@
 import pygame
 import spritesheet
+import random
 
 def set_static_variables():
     """
@@ -7,7 +8,7 @@ def set_static_variables():
     """
     global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS, speed, speed_linear, speed_diagonal
     WIDTH, HEIGHT = 1000, 800
-    BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 5000, 5000 # For the black background
+    BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 100, 100 # For the black background (temporary numbers)
     PLAYER_WIDTH, PLAYER_HEIGHT = 144, 144 # Attached to some settings in regards to player location on screen
     FPS = 60 # Framerate value for game
     speed = 4
@@ -50,20 +51,48 @@ def set_basic_settings():
 
 def load_images():
     """
-    Load and initialize game images (backgrounds, spritesheets, etc.).
+    Load and initialize game images (temporary black background, spritesheets, etc.).
 
     Global variables:
-        background_image: Surface for the game background
         sprite_sheet: SpriteSheet object for managing player sprite animations
         black_background: Surface for black background (temporary)
     """
-    global background_image, sprite_sheet, black_background
-    background_image = pygame.image.load('images/grass_bg.png')
-    background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+    global sprite_sheet, black_background
+    #global background_image # NOT USED ANYMORE
+    #background_image = pygame.image.load('images/grass_bg.png') # NOT USED ANYMORE
+    #background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT)) # NOT USED ANYMORE
     sprite_sheet_image = pygame.image.load('images/player.png').convert_alpha()
     sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
     black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
     black_background.fill(BLACK)
+
+def load_background_tiles():
+    """
+    Loads and scales all background tile images from the 'images' directory.
+    Populates the global 'background_tiles' list with each tile image.
+    Images 'bg-1.png' to 'bg-10.png' are loaded in that order.
+
+    Global variables:
+        background_tiles: List of loaded background tile images.
+    """
+    global background_tiles
+    background_tiles = []
+    for i in range(1, 11):
+        image = pygame.image.load(f'images/bg-{i}.png').convert()
+        image = pygame.transform.scale(image, (WIDTH, HEIGHT))
+        background_tiles.append(image)
+
+def select_tile_index():
+    """
+    Randomly selects an index for a background tile based on predefined probabilities.
+    Uses weighted random selection to choose an index, corresponding to a specific background tile.
+
+    Returns:
+        integer: The selected tile index.
+    """
+    chances = [40] + [10] * 4 + [7] * 2 + [3] * 3 # Change probabilities for each image if needed!
+    tiles = list(range(10))  # Tile indices from 0 to 9
+    return random.choices(tiles, weights=chances, k=1)[0]
 
 def create_animation_list():
     """
@@ -93,11 +122,14 @@ def initialize_game():
     """
     Initializes important game functions.
     """
+    global tile_grid
+    tile_grid = {}  # Dictionary to keep track of which tiles are loaded
     pygame.init()
     set_static_variables()
     set_color_codes()
     set_basic_settings()
     load_images()
+    load_background_tiles()
     create_animation_list()
 
 def handle_events():
@@ -177,15 +209,33 @@ def move_icon():
 def get_background_tiles():
     """
     Calculates which background tiles are needed based on the player's position.
+    The function creates a list of tiles to be drawn, each with its position and
+    randomly selected index.
+    Eensures that the same tile is not redrawn and maintains a grid of loaded tiles.
+
+    Global variables:
+        tile_grid: Dictionary tracking the loaded tiles on the grid.
+
+    Returns:
+        list: List of tuples, where each tuple contains the x and y coordinates of the tile
+        and the index of the tile image to be used.
     """
+    global tile_grid
     tiles = []
     start_x = int(icon_x // WIDTH) * WIDTH
     start_y = int(icon_y // HEIGHT) * HEIGHT
 
     for x in range(start_x - WIDTH, start_x + 2 * WIDTH, WIDTH):
         for y in range(start_y - HEIGHT, start_y + 2 * HEIGHT, HEIGHT):
-            tiles.append((x, y))
-    
+            grid_x, grid_y = x // WIDTH, y // HEIGHT
+
+            # If the tile is not already in the grid, select a new tile
+            if (grid_x, grid_y) not in tile_grid:
+                tile_index = select_tile_index()
+                tile_grid[(grid_x, grid_y)] = tile_index
+
+            tiles.append((x, y, tile_grid[(grid_x, grid_y)]))
+
     return tiles
 
 def calculate_camera_offset():
@@ -200,14 +250,23 @@ def calculate_camera_offset():
 
 def draw_elements():
     """
-    Uses Pygame's `blit` method to draw different elements on the screen.
-    Draws the necessary background tiles on the screen, creating an illusion of an infinite map.
-    The drawing is adjusted based on the calculated camera offset.
-    Additionally draws the current frame of player animation.
+    Draws the necessary background tiles and the player icon on the screen.
+    Fetches the required tiles from 'get_background_tiles' and
+    then draws them on the screen. 
+    It also places the player icon at its current position.
+
+    Global variables:
+        background_tiles: List of loaded background tile images.
+        animation_list: List of player animation frames.
+        action: Current action (animation) for player.
+        frame: Current frame for the player animation.
+        icon_x, icon_y: Current x and y coordinates of the player.
+        camera_x, camera_y: Current x and y coordinates of the camera.
     """
     tiles = get_background_tiles()
     for tile in tiles:
-        screen.blit(background_image, (tile[0] - camera_x, tile[1] - camera_y))
+        x, y, tile_index = tile
+        screen.blit(background_tiles[tile_index], (x - camera_x, y - camera_y))
 
     screen.blit(animation_list[action][frame], (icon_x - camera_x, icon_y - camera_y))
 
