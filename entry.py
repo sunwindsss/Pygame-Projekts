@@ -1,5 +1,6 @@
 import pygame
 import spritesheet
+import math
 import random
 
 def set_static_variables():
