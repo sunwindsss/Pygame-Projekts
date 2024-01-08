@@ -96,8 +96,10 @@ def initialize_game():
     animation_list2 = create_enemy_animation_list(enemy_sprite_sheet2)
 
 PLAYER_HIT = pygame.USEREVENT + 1
+ENEMY_HIT1 = pygame.USEREVENT + 2
+ENEMY_HIT2 = pygame.USEREVENT + 3
 def handle_events():
-    global running, last_lift_up, player_health
+    global running, last_lift_up, player_health, enemy1_health, enemy2_health
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -105,7 +107,10 @@ def handle_events():
             last_lift_up = event.key
         elif event.type == PLAYER_HIT:
             player_health -= 1
-            print(player_health)
+        elif event.type == ENEMY_HIT1:
+            enemy1_health -= 1
+        elif event.type == ENEMY_HIT2:
+            enemy2_health -= 1
             
 
 
@@ -220,6 +225,12 @@ def player_damage(player, enemy1, enemy2):
         pygame.event.post(pygame.event.Event(PLAYER_HIT))
     if player.colliderect(enemy2):
         pygame.event.post(pygame.event.Event(PLAYER_HIT))
+
+def enemy_damage(player, enemy1, enemy2):
+    if player.colliderect(enemy1):
+        pygame.event.post(pygame.event.Event(ENEMY_HIT1))
+    if player.colliderect(enemy2):
+        pygame.event.post(pygame.event.Event(ENEMY_HIT2))
 class HealthBar():
     def __init__(self, x, y, w, h, max_hp):
         self.x = x 
@@ -233,30 +244,50 @@ class HealthBar():
         pygame.draw.rect(screen, RED, (WIDTH/2 - 23, HEIGHT/2 - 60, 50, 10))
         pygame.draw.rect(screen, GREEN, (WIDTH/2 - 23, HEIGHT/2 - 60, 50 * ratio, 10))
     
-
 def main_loop():
-    global running, enemy_icon_x, enemy_icon_y, player_health, player, enemy, health_bar
+    global running,player_health, player, health_bar, enemy1_health, enemy2_health
 
     enemy1_coordinate = enemy_spawn()
     enemy1_icon_x = enemy1_coordinate[0]
     enemy1_icon_y = enemy1_coordinate[1]
+    enemy1_health = 50
+    enemy1_count = 0
 
     enemy2_coordinate = enemy_spawn()
     enemy2_icon_x = enemy2_coordinate[0]
     enemy2_icon_y = enemy2_coordinate[1]
+    enemy2_health = 50
+    enemy2_count = 0
 
     player = pygame.Rect(icon_x, icon_y, PLAYER_WIDTH/3,PLAYER_HEIGHT/2)
     health_bar = HealthBar(250, 250, 300, 40, 100)
     player_health = 100
+
     
     enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
     enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
     while running:
-        
+        if enemy1_health == 0:
+            enemy1_count += 1
+            enemy1_coordinate = enemy_spawn()
+            enemy1_icon_x = enemy1_coordinate[0]
+            enemy1_icon_y = enemy1_coordinate[1]
+            enemy1_health = 50
+            enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
+            print(enemy1_count)
+        if enemy2_health == 0:
+            enemy2_count +=1
+            enemy2_coordinate = enemy_spawn()
+            enemy2_icon_x = enemy2_coordinate[0]
+            enemy2_icon_y = enemy2_coordinate[1]
+            enemy2_health = 50
+            enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
+            print(enemy2_count)
         handle_events()
         health_bar.hp = player_health
         player_damage(player, enemy1, enemy2)
+        enemy_damage(player, enemy1, enemy2)
         update_animation()
         update_enemy_animation()
         move_icon()
