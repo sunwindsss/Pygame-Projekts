@@ -1,0 +1,13 @@
+entry.py
+-import pygame
+-import spritesheet
+-import random
+
+start_here.py
+-import pygame
+-import sys
+-import entry  # Game code module
+-import time  # For delay
+
+spritesheet.py
+-import pygame
