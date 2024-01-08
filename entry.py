@@ -100,7 +100,7 @@ def create_animation_list():
     based on the number of steps in each animation.
     Extracts images from the sprite sheet for each animation sequence.
     """
-    global animation_list, action, frame, step_counter, last_update, animation_cooldown, last_lift_up
+    global animation_list, action, frame, step_counter, last_update, animation_cooldown, last_lift_up, animation_completed
     animation_list = []
     animation_steps = [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
     last_update = pygame.time.get_ticks() # Controls animation speed
@@ -108,7 +108,8 @@ def create_animation_list():
     action = 4 # Animation that will be set as default when game starts
     frame = 0
     step_counter = 0 # Each step is one frame in the animation
-    last_lift_up = None
+    last_lift_up = pygame.K_s
+    animation_completed = False
 
     # Splits the spritesheet into frames
     for animation in animation_steps:
@@ -156,13 +157,17 @@ def update_animation():
     Ensures that the animation frames cycle through the available frames for
     the current action. The animation updates are synchronized with the game's time.
     """
-    global frame, last_update, animation_cooldown, action
+    global frame, last_update, animation_cooldown, animation_completed
+
     current_time = pygame.time.get_ticks()
+
     if current_time - last_update >= animation_cooldown:
-        frame += 1
-        last_update = current_time
-        if frame >= len(animation_list[action]):
-            frame = 0
+        if not animation_completed:
+            frame += 1
+            last_update = current_time
+            if frame >= len(animation_list[action]):
+                frame = 0
+                animation_completed = True
 
 def move_icon():
     """
@@ -173,7 +178,7 @@ def move_icon():
     adjusting the speed for diagonal or linear movement. 
     Determines the appropriate animation sequence to use based on the direction of movement.
     """
-    global icon_x, icon_y, action, frame
+    global icon_x, icon_y, action, frame, animation_completed
     keys = pygame.key.get_pressed()
 
     # Adjust speed based on linear or diagonal movement
@@ -186,17 +191,22 @@ def move_icon():
     if keys[pygame.K_s]:
         icon_y += speed
         action = 0
+        animation_completed = False
     if keys[pygame.K_d]:
         icon_x += speed
         action = 2
+        animation_completed = False
     if keys[pygame.K_a]:
         icon_x -= speed
         action = 1
+        animation_completed = False
     if keys[pygame.K_w]:
         icon_y -= speed
         action = 3
+        animation_completed = False
 
-    if sum(keys) == 0:
+    if sum(keys) == 0 and last_lift_up != pygame.K_SPACE:
+        animation_completed = False
         if last_lift_up == pygame.K_w:
             action = 7
         elif last_lift_up == pygame.K_s:
@@ -207,7 +217,7 @@ def move_icon():
             action = 6
     
     if keys[pygame.K_SPACE] and not keys[pygame.K_w] and not keys[pygame.K_s] and not keys[pygame.K_a] and not keys[pygame.K_d]:
-        frame = 0
+        animation_completed = False
         if last_lift_up == pygame.K_w:
             action = 11
         elif last_lift_up == pygame.K_s:
@@ -302,7 +312,6 @@ def main_loop():
         calculate_camera_offset()
         draw_elements()
         draw_fps_counter()
-
         pygame.display.update()
         clock.tick(FPS)
 
