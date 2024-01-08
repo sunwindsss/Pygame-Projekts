@@ -4,6 +4,11 @@ import entry  # Game code module
 import time  # For delay
 
 def main_menu():
+    """
+    Handles main menu functionality.
+    Draws button images, backgrounds, credits and control scheme screens.
+    Handles button animations like hovers and presses in the main menu.
+    """
     pygame.init()
     WIDTH, HEIGHT = 1000, 800
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -96,6 +101,10 @@ def main_menu():
         pygame.display.update()
 
 def draw_buttons(screen, current_button_images, start_buttons, info_buttons, credits_buttons, quit_buttons, close_buttons, button_rects):
+    """
+    Handles button drawing in the main menu.
+    Ensures the close button only shows up in the credits and info screen.
+    """
     screen.blit(start_buttons[current_button_images["start"]], button_rects["start"])
     screen.blit(info_buttons[current_button_images["info"]], button_rects["info"])
     screen.blit(credits_buttons[current_button_images["credits"]], button_rects["credits"])
