@@ -127,14 +127,15 @@ def game_over_screen():
     Displays the game over screen with interactive buttons.
     """
     global running, score
-    mainmenu_rect = pygame.Rect((WIDTH // 2 - 150, HEIGHT // 2 + 50), (300, 100))
-    restart_rect = pygame.Rect((WIDTH // 2 - 125, HEIGHT // 2 + 200), (250, 100))
+    mainmenu_rect = pygame.Rect((WIDTH // 2 + 50, HEIGHT // 2 + 280), (300, 100))
+    restart_rect = pygame.Rect((WIDTH // 2 - 350, HEIGHT // 2 + 280), (250, 100))
 
     while True:
         screen.blit(gameover_img, (0, 0))
 
-        score_text = font.render(f"Score: {int(score)}", True, WHITE)
-        screen.blit(score_text, (WIDTH // 2 - 50, HEIGHT // 2 - 50))
+        font = pygame.font.Font(None, 100)
+        score_text = font.render(f"{int(score)}", True, WHITE)
+        screen.blit(score_text, (WIDTH // 2 + 40, HEIGHT // 2 + 135))
 
         mouse_pos = pygame.mouse.get_pos()
         mouse_click = False
@@ -154,7 +155,8 @@ def game_over_screen():
                 backquit_sound.play()
                 pygame.time.delay(100)  # Delay to see the image
                 import start_here  # Import the script containing the main menu
-                start_here.main_menu()  # Assuming this is the function to call
+                pygame.mixer.stop()
+                start_here.main_menu()  # Call main_menu function from start_here
                 break
         else:
             screen.blit(mainmenu_imgs[0], mainmenu_rect.topleft)
