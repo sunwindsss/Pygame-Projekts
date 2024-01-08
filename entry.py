@@ -179,7 +179,6 @@ def get_background_tiles():
     Calculates which background tiles are needed based on the player's position.
     """
     tiles = []
-    tile_size = WIDTH, HEIGHT  # Each tile should match the size of the window width and height
     start_x = int(icon_x // WIDTH) * WIDTH
     start_y = int(icon_y // HEIGHT) * HEIGHT
 
