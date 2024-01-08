@@ -42,7 +42,7 @@ def set_basic_settings():
     background_surface = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT))
     icon = pygame.image.load('images/icon.png')
     pygame.display.set_icon(icon)
-    pygame.display.set_caption("ROGUELIKE STUFF")
+    pygame.display.set_caption("IKONIKS -- SPĒLES REŽĪMS!")
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 40)
     running = True
@@ -296,8 +296,13 @@ def main_loop():
 
     pygame.quit()
 
-# Check if this script is being run directly (not imported as a module)
-if __name__ == "__main__":
-    # Initializes the game and starts running the main game loop
+def start_game():
+    """
+    Starts the main game initialization and loops when the game is started through the main menu.
+    """
     initialize_game()
     main_loop()
+
+# Check if this script is being run directly (not imported as a module)
+if __name__ == "__main__":
+    start_game()
