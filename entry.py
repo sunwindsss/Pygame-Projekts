@@ -56,7 +56,7 @@ def load_images():
         sprite_sheet: SpriteSheet object for managing player sprite animations
         black_background: Surface for black background (temporary)
     """
-    global sprite_sheet, black_background, enemy_sprite_sheet1, enemy_sprite_sheet2
+    global sprite_sheet, black_background, enemy_sprite_sheet1, enemy_sprite_sheet2, enemy_sprite_sheet3
     #global background_image # NOT USED ANYMORE
     #background_image = pygame.image.load('images/grass_bg.png') # NOT USED ANYMORE
     #background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT)) # NOT USED ANYMORE
@@ -68,6 +68,9 @@ def load_images():
 
     enemy_sprite_sheet_image2 = pygame.image.load('images/doux_upgrade.png').convert_alpha()
     enemy_sprite_sheet2 = spritesheet.SpriteSheet(enemy_sprite_sheet_image2)
+
+    enemy_sprite_sheet_image3 = pygame.image.load('images/enemy2.png').convert_alpha()
+    enemy_sprite_sheet3 = spritesheet.SpriteSheet(enemy_sprite_sheet_image3)
 
     black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT)) # NOT USED ANYMORE
     black_background.fill(BLACK) # NOT USED ANYMORE
@@ -149,7 +152,7 @@ def initialize_game():
     """
     Initializes important game functions.
     """
-    global tile_grid, animation_list1, animation_list2
+    global tile_grid, animation_list1, animation_list2, animation_list3
     tile_grid = {}  # Dictionary to keep track of which tiles are loaded
     pygame.init()
     set_static_variables()
@@ -160,10 +163,12 @@ def initialize_game():
     create_animation_list()
     animation_list1 = create_enemy_animation_list(enemy_sprite_sheet1)
     animation_list2 = create_enemy_animation_list(enemy_sprite_sheet2)
+    animation_list3 = create_enemy_animation_list(enemy_sprite_sheet3)
 
 PLAYER_HIT = pygame.USEREVENT + 1
 ENEMY_HIT1 = pygame.USEREVENT + 2
 ENEMY_HIT2 = pygame.USEREVENT + 3
+ENEMY_HIT3 = pygame.USEREVENT + 4
 
 def handle_events():
     """
@@ -176,7 +181,7 @@ def handle_events():
         running: Game status
         last_lift_up: The last key that was released
     """
-    global running, last_lift_up, player_health, enemy1_health, enemy2_health
+    global running, last_lift_up, player_health, enemy1_health, enemy2_health, enemy3_health
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -188,6 +193,8 @@ def handle_events():
             enemy1_health -= 1
         elif event.type == ENEMY_HIT2:
             enemy2_health -= 1
+        elif event.type == ENEMY_HIT3:
+            enemy3_health -= 1
             
 
 
@@ -329,11 +336,11 @@ def enemy_pathfinding(enemy, player):
     if player.y < enemy.y:
         enemy.y -= speed/2
 
-def enemy_spawn():
-    square_top_left_x = 0
-    square_top_left_y = 0
-    square_bottom_right_x = WIDTH
-    square_bottom_right_y = HEIGHT
+def enemy_spawn(player):
+    square_top_left_x = player.x - 500
+    square_top_left_y = player.y - 400
+    square_bottom_right_x = player.x + 500
+    square_bottom_right_y = player.y + 400
     while True:
         # Generate random x and y coordinates outside the square
         x = random.uniform(square_top_left_x - 100, square_bottom_right_x + 100)
@@ -353,7 +360,7 @@ def calculate_camera_offset():
     camera_x = player.x - (WIDTH / 2) + (PLAYER_WIDTH / 2)
     camera_y = player.y - (HEIGHT / 2) + (PLAYER_HEIGHT / 2)
 
-def draw_elements(enemy1, enemy2, enemy_animation_list1, enemy_animation_list2):
+def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation_list2, enemy_animation_list3):
 
     """
     Draws the necessary background tiles and the player icon on the screen.
@@ -377,6 +384,7 @@ def draw_elements(enemy1, enemy2, enemy_animation_list1, enemy_animation_list2):
     #screen.blit(animation_list[action][frame], (icon_x - camera_x, icon_y - camera_y))
     screen.blit(enemy_animation_list1[enemy_action][enemy_frame], (enemy1.x - camera_x + 28, enemy1.y - camera_y + 28))
     screen.blit(enemy_animation_list2[enemy_action][enemy_frame], (enemy2.x - camera_x + 28, enemy2.y - camera_y + 28))
+    screen.blit(enemy_animation_list3[enemy_action][enemy_frame], (enemy3.x - camera_x + 28, enemy3.y - camera_y + 28))
     screen.blit(animation_list[action][frame], (player.x - camera_x, player.y - camera_y))
     health_bar.draw(screen)
 
@@ -386,19 +394,25 @@ def draw_fps_counter():
     the specified font and displays it at the top-left corner of the game window.
     """
     fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, WHITE)
+    score_text = font.render(f"Score: {int(score)}", True, WHITE)
     screen.blit(fps_text, (10, 10))
+    screen.blit(score_text, (10, 45))
 
-def player_damage(player, enemy1, enemy2):
+def player_damage(player, enemy1, enemy2, enemy3):
     if player.colliderect(enemy1):
         pygame.event.post(pygame.event.Event(PLAYER_HIT))
     if player.colliderect(enemy2):
         pygame.event.post(pygame.event.Event(PLAYER_HIT))
+    if player.colliderect(enemy3):
+        pygame.event.post(pygame.event.Event(PLAYER_HIT))
 
-def enemy_damage(player, enemy1, enemy2):
+def enemy_damage(player, enemy1, enemy2, enemy3):
     if player.colliderect(enemy1):
         pygame.event.post(pygame.event.Event(ENEMY_HIT1))
     if player.colliderect(enemy2):
         pygame.event.post(pygame.event.Event(ENEMY_HIT2))
+    if player.colliderect(enemy3):
+        pygame.event.post(pygame.event.Event(ENEMY_HIT3))
 class HealthBar():
     def __init__(self, x, y, w, h, max_hp):
         self.x = x 
@@ -418,56 +432,68 @@ def main_loop():
     The loop continues until the global variable `running` becomes False, and then quits the game.
     """
 
-    global running,player_health, player, health_bar, enemy1_health, enemy2_health
-
-    enemy1_coordinate = enemy_spawn()
-    enemy1_icon_x = enemy1_coordinate[0]
-    enemy1_icon_y = enemy1_coordinate[1]
-    enemy1_health = 50
-    enemy1_count = 0
-
-    enemy2_coordinate = enemy_spawn()
-    enemy2_icon_x = enemy2_coordinate[0]
-    enemy2_icon_y = enemy2_coordinate[1]
-    enemy2_health = 50
-    enemy2_count = 0
+    global running,player_health, player, health_bar, enemy1_health, enemy2_health, enemy3_health, score
 
     player = pygame.Rect(icon_x, icon_y, PLAYER_WIDTH/3,PLAYER_HEIGHT/2)
     health_bar = HealthBar(250, 250, 300, 40, 100)
     player_health = 100
 
-    
+
+    enemy1_coordinate = enemy_spawn(player)
+    enemy1_icon_x = enemy1_coordinate[0]
+    enemy1_icon_y = enemy1_coordinate[1]
+    enemy1_health = 20
+
+    enemy2_coordinate = enemy_spawn(player)
+    enemy2_icon_x = enemy2_coordinate[0]
+    enemy2_icon_y = enemy2_coordinate[1]
+    enemy2_health = 20
+
+    enemy3_coordinate = enemy_spawn(player)
+    enemy3_icon_x = enemy3_coordinate[0]
+    enemy3_icon_y = enemy3_coordinate[1]
+    enemy3_health = 20
+
+    score = 0
+
     enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
     enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
+    enemy3 = pygame.Rect(enemy3_icon_x, enemy3_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
     while running:
         if enemy1_health == 0:
-            enemy1_count += 1
-            enemy1_coordinate = enemy_spawn()
+            score += 1
+            enemy1_coordinate = enemy_spawn(player)
             enemy1_icon_x = enemy1_coordinate[0]
             enemy1_icon_y = enemy1_coordinate[1]
-            enemy1_health = 50
+            enemy1_health = 20
             enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
-            print(enemy1_count)
         if enemy2_health == 0:
-            enemy2_count +=1
-            enemy2_coordinate = enemy_spawn()
+            score +=1
+            enemy2_coordinate = enemy_spawn(player)
             enemy2_icon_x = enemy2_coordinate[0]
             enemy2_icon_y = enemy2_coordinate[1]
-            enemy2_health = 50
+            enemy2_health = 20
             enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
-            print(enemy2_count)
+        if enemy3_health == 0:
+            score +=1
+            enemy3_coordinate = enemy_spawn(player)
+            enemy3_icon_x = enemy3_coordinate[0]
+            enemy3_icon_y = enemy3_coordinate[1]
+            enemy3_health = 20
+            enemy3 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
         handle_events()
         health_bar.hp = player_health
-        player_damage(player, enemy1, enemy2)
-        enemy_damage(player, enemy1, enemy2)
+        player_damage(player, enemy1, enemy2, enemy3)
+        enemy_damage(player, enemy1, enemy2, enemy3)
         update_animation()
         update_enemy_animation()
         move_icon()
         enemy_pathfinding(enemy1, player)
         enemy_pathfinding(enemy2, player)
+        enemy_pathfinding(enemy3, player)
         calculate_camera_offset()
-        draw_elements(enemy1, enemy2, animation_list1, animation_list2)
+        draw_elements(enemy1, enemy2, enemy3, animation_list1, animation_list2, animation_list3)
         draw_fps_counter()
         pygame.display.update()
         clock.tick(FPS)
