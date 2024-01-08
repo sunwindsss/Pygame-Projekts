@@ -6,11 +6,13 @@ def set_static_variables():
     """
     Initializes some basic game variables.
     """
-    global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS, speed, speed_linear, speed_diagonal
+    global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS, speed, speed_linear, speed_diagonal, MAX_ARROWS, ARROW_SPEED
     WIDTH, HEIGHT = 1000, 800
     BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 100, 100 # Black background size (UNUSED!!)
     PLAYER_WIDTH, PLAYER_HEIGHT = 144, 144 # Attached to some settings in regards to player location on screen
     FPS = 60 # Framerate value for game
+    MAX_ARROWS = 5
+    ARROW_SPEED = 7
     speed = 4
     speed_linear = 4
     speed_diagonal = 2.828 # Coefficient 0.707 in regards to linear speed
@@ -260,11 +262,16 @@ def handle_events():
         elif event.type == PLAYER_HIT:
             player_health -= 1
         elif event.type == ENEMY_HIT1:
-            enemy1_health -= 1
+            enemy1_health -= 20
         elif event.type == ENEMY_HIT2:
-            enemy2_health -= 1
+            enemy2_health -= 20
         elif event.type == ENEMY_HIT3:
-            enemy3_health -= 1
+            enemy3_health -= 20
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and len(player_arrows) < MAX_ARROWS:
+                bullet = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
+                player_arrows.append(bullet)
             
 
 
@@ -483,6 +490,22 @@ def enemy_damage(player, enemy1, enemy2, enemy3):
         pygame.event.post(pygame.event.Event(ENEMY_HIT2))
     if player.colliderect(enemy3):
         pygame.event.post(pygame.event.Event(ENEMY_HIT3))
+
+def handle_arrows(player_arrows):
+    for arrow in player_arrows:
+        arrow.x += ARROW_SPEED
+        if enemy1.colliderect(arrow):
+            pygame.event.post(pygame.event.Event(ENEMY_HIT1))
+            player_arrows.remove(arrow)
+        if enemy2.colliderect(arrow):
+            pygame.event.post(pygame.event.Event(ENEMY_HIT2))
+            player_arrows.remove(arrow)
+        if enemy3.colliderect(arrow):
+            pygame.event.post(pygame.event.Event(ENEMY_HIT3))
+            player_arrows.remove(arrow)
+        elif arrow.x > WIDTH:
+            player_arrows.remove(arrow)
+
 class HealthBar():
     def __init__(self, x, y, w, h, max_hp):
         self.x = x 
@@ -501,11 +524,14 @@ def main_loop():
     Runs the main game loop and processes game events.
     The loop continues until the global variable `running` becomes False, and then quits the game.
     """
-    global running,player_health, player, health_bar, enemy1_health, enemy2_health, enemy3_health, score
+    global running,player_health, player, health_bar, enemy1_health, enemy2_health, enemy3_health, score, player_arrows, enemy1, enemy2, enemy3
+
 
     player = pygame.Rect(icon_x, icon_y, PLAYER_WIDTH/3,PLAYER_HEIGHT/2)
     health_bar = HealthBar(250, 250, 300, 40, 100)
+    player_arrows = []
     player_health = 100
+    
 
 
     enemy1_coordinate = enemy_spawn(player)
@@ -552,12 +578,14 @@ def main_loop():
             enemy3_icon_y = enemy3_coordinate[1]
             enemy3_health = 20
             enemy3 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
-            
+
         if player_health <= 0:
             game_over_screen()
             break
-        handle_events()
+
         health_bar.hp = player_health
+        handle_events()
+        handle_arrows(player_arrows)
         player_damage(player, enemy1, enemy2, enemy3)
         enemy_damage(player, enemy1, enemy2, enemy3)
         update_animation()
