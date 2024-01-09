@@ -248,6 +248,10 @@ ENEMY_HIT1 = pygame.USEREVENT + 2
 ENEMY_HIT2 = pygame.USEREVENT + 3
 ENEMY_HIT3 = pygame.USEREVENT + 4
 
+ENEMY_HIT1_MELE = pygame.USEREVENT + 5
+ENEMY_HIT2_MELE = pygame.USEREVENT + 6
+ENEMY_HIT3_MELE = pygame.USEREVENT + 7
+
 def handle_events():
     """
     Iterates through all Pygame events, such as key presses or closing the game window,
@@ -266,14 +270,20 @@ def handle_events():
         elif event.type == pygame.KEYUP:
             last_lift_up = event.key
         elif event.type == PLAYER_HIT:
-            player_health -= 1
+            player_health -= 2
         elif event.type == ENEMY_HIT1:
-            enemy1_health -= 1
+            enemy1_health -= 25
         elif event.type == ENEMY_HIT2:
-            enemy2_health -= 1
+            enemy2_health -= 25
         elif event.type == ENEMY_HIT3:
-            enemy3_health -= 1
+            enemy3_health -= 25
 
+        elif event.type == ENEMY_HIT1_MELE:
+            enemy1_health -= 1
+        elif event.type == ENEMY_HIT2_MELE:
+            enemy2_health -= 1
+        elif event.type == ENEMY_HIT3_MELE:
+            enemy3_health -= 1
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE and len(player_arrows) < MAX_ARROWS:
                 bullet = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
@@ -470,7 +480,7 @@ def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation
     screen.blit(enemy_animation_list3[enemy_action][enemy_frame], (enemy3.x - camera_x + 28, enemy3.y - camera_y + 28))
     screen.blit(animation_list[action][frame], (player.x - camera_x, player.y - camera_y))
     for arrow in player_arrows:
-        screen.blit(iron_arrow, (arrow.x - camera_x, arrow.y - camera_y))
+        screen.blit(iron_arrow, (arrow.x - camera_x + 77, arrow.y - camera_y + 18))
     health_bar.draw(screen)
 
 def draw_fps_counter():
@@ -493,11 +503,11 @@ def player_damage(player, enemy1, enemy2, enemy3):
 
 def enemy_damage(player, enemy1, enemy2, enemy3):
     if player.colliderect(enemy1):
-        pygame.event.post(pygame.event.Event(ENEMY_HIT1))
+        pygame.event.post(pygame.event.Event(ENEMY_HIT1_MELE))
     if player.colliderect(enemy2):
-        pygame.event.post(pygame.event.Event(ENEMY_HIT2))
+        pygame.event.post(pygame.event.Event(ENEMY_HIT2_MELE))
     if player.colliderect(enemy3):
-        pygame.event.post(pygame.event.Event(ENEMY_HIT3))
+        pygame.event.post(pygame.event.Event(ENEMY_HIT3_MELE))
 
 def handle_arrows(player_arrows):
     global arrow
@@ -545,17 +555,17 @@ def main_loop():
     enemy1_coordinate = enemy_spawn(player)
     enemy1_icon_x = enemy1_coordinate[0]
     enemy1_icon_y = enemy1_coordinate[1]
-    enemy1_health = 20
+    enemy1_health = 50
 
     enemy2_coordinate = enemy_spawn(player)
     enemy2_icon_x = enemy2_coordinate[0]
     enemy2_icon_y = enemy2_coordinate[1]
-    enemy2_health = 20
+    enemy2_health = 50
 
     enemy3_coordinate = enemy_spawn(player)
     enemy3_icon_x = enemy3_coordinate[0]
     enemy3_icon_y = enemy3_coordinate[1]
-    enemy3_health = 20
+    enemy3_health = 50
 
     score = 0
 
@@ -570,21 +580,21 @@ def main_loop():
             enemy1_coordinate = enemy_spawn(player)
             enemy1_icon_x = enemy1_coordinate[0]
             enemy1_icon_y = enemy1_coordinate[1]
-            enemy1_health = 20
+            enemy1_health = 50
             enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
         if enemy2_health == 0:
             score +=1
             enemy2_coordinate = enemy_spawn(player)
             enemy2_icon_x = enemy2_coordinate[0]
             enemy2_icon_y = enemy2_coordinate[1]
-            enemy2_health = 20
+            enemy2_health = 50
             enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
         if enemy3_health == 0:
             score +=1
             enemy3_coordinate = enemy_spawn(player)
             enemy3_icon_x = enemy3_coordinate[0]
             enemy3_icon_y = enemy3_coordinate[1]
-            enemy3_health = 20
+            enemy3_health = 50
             enemy3 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
         if player_health <= 0:
