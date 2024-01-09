@@ -12,7 +12,7 @@ def set_static_variables():
     PLAYER_WIDTH, PLAYER_HEIGHT = 144, 144 # Attached to some settings in regards to player location on screen
     FPS = 60 # Framerate value for game
     WIN = pygame.display.set_mode((WIDTH,HEIGHT))
-    MAX_ARROWS = 5
+    MAX_ARROWS = 1
     ARROW_SPEED = 7
     speed = 4
     speed_linear = 4
@@ -270,13 +270,16 @@ def handle_events():
         elif event.type == pygame.KEYUP:
             last_lift_up = event.key
         elif event.type == PLAYER_HIT:
-            player_health -= 2
+            player_health -= 1
         elif event.type == ENEMY_HIT1:
             enemy1_health -= 25
+            print(enemy1_health)
         elif event.type == ENEMY_HIT2:
             enemy2_health -= 25
+            print(enemy2_health)
         elif event.type == ENEMY_HIT3:
             enemy3_health -= 25
+            print(enemy3_health)
 
         elif event.type == ENEMY_HIT1_MELE:
             enemy1_health -= 1
@@ -510,21 +513,23 @@ def enemy_damage(player, enemy1, enemy2, enemy3):
         pygame.event.post(pygame.event.Event(ENEMY_HIT3_MELE))
 
 def handle_arrows(player_arrows):
-    global arrow
+    global arrow, action
     for arrow in player_arrows:
         arrow.x += ARROW_SPEED
-        if enemy1.colliderect(arrow):
-            pygame.event.post(pygame.event.Event(ENEMY_HIT1))
+        if action == 10 or action == 6:
+            if enemy1.colliderect(arrow):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT1))
+                player_arrows.remove(arrow)
+            if enemy2.colliderect(arrow):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT2))
+                player_arrows.remove(arrow)
+            if enemy3.colliderect(arrow):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT3))
+                player_arrows.remove(arrow)
+            elif arrow.x > player.x+700:
+                player_arrows.remove(arrow)
+        else:
             player_arrows.remove(arrow)
-        if enemy2.colliderect(arrow):
-            pygame.event.post(pygame.event.Event(ENEMY_HIT2))
-            player_arrows.remove(arrow)
-        if enemy3.colliderect(arrow):
-            pygame.event.post(pygame.event.Event(ENEMY_HIT3))
-            player_arrows.remove(arrow)
-        elif arrow.x > player.x+700:
-            player_arrows.remove(arrow)
-
 class HealthBar():
     def __init__(self, x, y, w, h, max_hp):
         self.x = x 
@@ -575,7 +580,7 @@ def main_loop():
 
     game_over = False
     while running:
-        if enemy1_health == 0:
+        if enemy1_health <= 0:
             score += 1
             enemy1_coordinate = enemy_spawn(player)
             enemy1_icon_x = enemy1_coordinate[0]
@@ -584,12 +589,12 @@ def main_loop():
             enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
         if enemy2_health == 0:
             score +=1
-            enemy2_coordinate = enemy_spawn(player)
+            enemy2_coordinate <= enemy_spawn(player)
             enemy2_icon_x = enemy2_coordinate[0]
             enemy2_icon_y = enemy2_coordinate[1]
             enemy2_health = 50
             enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
-        if enemy3_health == 0:
+        if enemy3_health <= 0:
             score +=1
             enemy3_coordinate = enemy_spawn(player)
             enemy3_icon_x = enemy3_coordinate[0]
