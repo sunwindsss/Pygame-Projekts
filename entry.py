@@ -273,13 +273,10 @@ def handle_events():
             player_health -= 1
         elif event.type == ENEMY_HIT1:
             enemy1_health -= 25
-            print(enemy1_health)
         elif event.type == ENEMY_HIT2:
             enemy2_health -= 25
-            print(enemy2_health)
         elif event.type == ENEMY_HIT3:
             enemy3_health -= 25
-            print(enemy3_health)
 
         elif event.type == ENEMY_HIT1_MELE:
             enemy1_health -= 1
@@ -587,20 +584,21 @@ def main_loop():
             enemy1_icon_y = enemy1_coordinate[1]
             enemy1_health = 50
             enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
-        if enemy2_health == 0:
+        if enemy2_health <= 0:
             score +=1
-            enemy2_coordinate <= enemy_spawn(player)
+            enemy2_coordinate = enemy_spawn(player)
             enemy2_icon_x = enemy2_coordinate[0]
             enemy2_icon_y = enemy2_coordinate[1]
             enemy2_health = 50
             enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
+            print(enemy2_icon_x, enemy2_icon_y)
         if enemy3_health <= 0:
             score +=1
             enemy3_coordinate = enemy_spawn(player)
             enemy3_icon_x = enemy3_coordinate[0]
             enemy3_icon_y = enemy3_coordinate[1]
             enemy3_health = 50
-            enemy3 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
+            enemy3 = pygame.Rect(enemy3_icon_x, enemy3_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
         if player_health <= 0:
             game_over_screen()
