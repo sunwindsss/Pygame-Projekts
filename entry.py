@@ -286,8 +286,8 @@ def handle_events():
             enemy3_health -= 1
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE and len(player_arrows) < MAX_ARROWS:
-                bullet = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
-                player_arrows.append(bullet)
+                arrow = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
+                player_arrows.append(arrow)
             
 
 
@@ -509,11 +509,11 @@ def enemy_damage(player, enemy1, enemy2, enemy3):
     if player.colliderect(enemy3):
         pygame.event.post(pygame.event.Event(ENEMY_HIT3_MELE))
 
-def handle_arrows(player_arrows):
-    global arrow, action
+def handle_arrows(player_arrows, action):
+    global arrow
     for arrow in player_arrows:
-        arrow.x += ARROW_SPEED
-        if action == 10 or action == 6:
+        if action == 6 or action == 10 or arrow.x > player.x:
+            arrow.x += ARROW_SPEED
             if enemy1.colliderect(arrow):
                 pygame.event.post(pygame.event.Event(ENEMY_HIT1))
                 player_arrows.remove(arrow)
@@ -523,7 +523,7 @@ def handle_arrows(player_arrows):
             if enemy3.colliderect(arrow):
                 pygame.event.post(pygame.event.Event(ENEMY_HIT3))
                 player_arrows.remove(arrow)
-            elif arrow.x > player.x+700:
+            elif arrow.x > player.x+700 or arrow.x < player.x-700:
                 player_arrows.remove(arrow)
         else:
             player_arrows.remove(arrow)
@@ -606,7 +606,7 @@ def main_loop():
 
         health_bar.hp = player_health
         handle_events()
-        handle_arrows(player_arrows)
+        handle_arrows(player_arrows, action)
         player_damage(player, enemy1, enemy2, enemy3)
         enemy_damage(player, enemy1, enemy2, enemy3)
         update_animation()
