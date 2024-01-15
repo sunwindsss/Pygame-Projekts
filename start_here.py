@@ -27,7 +27,7 @@ def load_sounds():
     menu_music.set_volume(0.1)
     game_music.set_volume(0.1)
 
-    menu_music.play(-1)  # The '-1' argument makes the music play indefinitely
+    pygame.mixer.Channel(0).play(menu_music, loops=-1)  # The '-1' argument makes the music play indefinitely
 
 
 def main_menu():
@@ -90,28 +90,28 @@ def main_menu():
                         # Process main menu button clicks only when neither info nor credits screen is active
                         if not (show_info or show_credits):
                             if button_name == "start":
-                                start_sound.play()
+                                pygame.mixer.Channel(4).play(start_sound)
                                 menu_music.stop()
                                 game_music.play(-1)
                                 pygame.time.delay(100)
                                 running = False
                                 entry.start_game()
                             elif button_name == "info":
-                                infocredits_sound.play()
+                                pygame.mixer.Channel(1).play(infocredits_sound)
                                 pygame.time.delay(100)
                                 show_info = True
                             elif button_name == "credits":
-                                infocredits_sound.play()
+                                pygame.mixer.Channel(2).play(infocredits_sound)
                                 pygame.time.delay(100)
                                 show_credits = True
                             elif button_name == "quit":
-                                backquit_sound.play()
+                                pygame.mixer.Channel(5).play(backquit_sound)
                                 pygame.time.delay(100)
                                 pygame.quit()
 
                         # Process close button clicks only when info or credits screen is active
                         if (show_info or show_credits) and button_name == "close":
-                            backquit_sound.play()
+                            pygame.mixer.Channel(3).play(backquit_sound)
                             pygame.time.delay(100)
                             show_info = False
                             show_credits = False
