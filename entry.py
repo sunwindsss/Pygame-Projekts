@@ -372,7 +372,7 @@ def get_background_tiles():
     Calculates which background tiles are needed based on the player's position.
     The function creates a list of tiles to be drawn, each with its position and
     randomly selected index.
-    Eensures that the same tile is not redrawn and maintains a grid of loaded tiles.
+    Ensures that the same tile is not redrawn and maintains a grid of loaded tiles.
 
     Global variables:
         tile_grid: Dictionary tracking the loaded tiles on the grid.
