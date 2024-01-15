@@ -606,6 +606,7 @@ def main_loop():
         clock.tick(FPS)
 
     pygame.quit()
+    exit()
 
 def start_game():
     """
