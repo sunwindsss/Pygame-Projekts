@@ -45,13 +45,13 @@ def main_menu():
     
     load_sounds()  # Load sounds and start playing menu music
 
-    # Load images
+    # Load images and rescale them
     mainmenu = pygame.image.load('images/mainmenu.png')
-    start_buttons = [pygame.image.load(f'images/start-{i}.png') for i in range(1, 4)]
-    info_buttons = [pygame.image.load(f'images/info-{i}.png') for i in range(1, 4)]
-    credits_buttons = [pygame.image.load(f'images/credits-{i}.png') for i in range(1, 4)]
-    quit_buttons = [pygame.image.load(f'images/quit-{i}.png') for i in range(1, 4)]
-    close_buttons = [pygame.image.load(f'images/close-{i}.png') for i in range(1, 4)]
+    start_buttons = [pygame.transform.scale(pygame.image.load(f'images/start-{i}.png'), (200, 100)) for i in range(1, 4)]
+    info_buttons = [pygame.transform.scale(pygame.image.load(f'images/info-{i}.png'), (200, 100)) for i in range(1, 4)]
+    credits_buttons = [pygame.transform.scale(pygame.image.load(f'images/credits-{i}.png'), (250, 100)) for i in range(1, 4)]
+    quit_buttons = [pygame.transform.scale(pygame.image.load(f'images/quit-{i}.png'), (200, 100)) for i in range(1, 4)]
+    close_buttons = [pygame.transform.scale(pygame.image.load(f'images/close-{i}.png'), (200, 100)) for i in range(1, 4)]
     info_bg = pygame.image.load('images/info-bg.png')
     credits_bg = pygame.image.load('images/credits-bg.png')
 

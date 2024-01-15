@@ -59,9 +59,7 @@ def load_images():
         black_background: Surface for black background (temporary)
     """
     global sprite_sheet, black_background, enemy_sprite_sheet1, enemy_sprite_sheet2, enemy_sprite_sheet3
-    #global background_image # NOT USED ANYMORE
-    #background_image = pygame.image.load('images/grass_bg.png') # NOT USED ANYMORE
-    #background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT)) # NOT USED ANYMORE
+
     sprite_sheet_image = pygame.image.load('images/player.png').convert_alpha()
     sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
 
@@ -113,8 +111,9 @@ def load_game_over_assets():
     gameover_img = pygame.image.load('images/gameover.png').convert_alpha()
     gameover_img = pygame.transform.scale(gameover_img, (WIDTH, HEIGHT))
 
-    mainmenu_imgs = [pygame.image.load(f'images/mainmenu-{i}.png').convert_alpha() for i in range(1, 4)]
-    restart_imgs = [pygame.image.load(f'images/restart-{i}.png').convert_alpha() for i in range(1, 4)]
+    # Load button images and rescale them
+    mainmenu_imgs = [pygame.transform.scale(pygame.image.load(f'images/mainmenu-{i}.png'), (300, 100)) for i in range(1, 4)]
+    restart_imgs = [pygame.transform.scale(pygame.image.load(f'images/restart-{i}.png'), (250, 100)) for i in range(1, 4)]
 
     backquit_sound = pygame.mixer.Sound('sounds/backquit.ogg')
     start_sound = pygame.mixer.Sound('sounds/start.ogg')
