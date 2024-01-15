@@ -80,6 +80,7 @@ def main_menu():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+                exit()
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for button_name, rect in button_rects.items():
                     if rect.collidepoint(mouse_pos):
@@ -108,6 +109,7 @@ def main_menu():
                                 pygame.mixer.Channel(5).play(backquit_sound)
                                 pygame.time.delay(100)
                                 pygame.quit()
+                                exit()
 
                         # Process close button clicks only when info or credits screen is active
                         if (show_info or show_credits) and button_name == "close":
