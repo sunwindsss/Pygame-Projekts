@@ -51,7 +51,7 @@ def main_menu():
     info_buttons = [pygame.image.load(f'images/info-{i}.png') for i in range(1, 4)]
     credits_buttons = [pygame.image.load(f'images/credits-{i}.png') for i in range(1, 4)]
     quit_buttons = [pygame.image.load(f'images/quit-{i}.png') for i in range(1, 4)]
-    close_buttons = [pygame.image.load(f'images/close-{i}.png') for i in range(1, 4)]  # Close button variations
+    close_buttons = [pygame.image.load(f'images/close-{i}.png') for i in range(1, 4)]
     info_bg = pygame.image.load('images/info-bg.png')
     credits_bg = pygame.image.load('images/credits-bg.png')
 
@@ -72,7 +72,7 @@ def main_menu():
         "info": 0,
         "credits": 0,
         "quit": 0,
-        "close": 0  # Initialize state for close button
+        "close": 0
     }
 
     while running:
