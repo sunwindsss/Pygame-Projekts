@@ -84,13 +84,27 @@ def main_menu():
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for button_name, rect in button_rects.items():
                     if rect.collidepoint(mouse_pos):
-                        # Update button state to 'click' (DOESN'T WORK)
+                        # Update button state to 'click'
                         current_button_images[button_name] = 2
                         pygame.display.update()
                         
+                        # Process close button clicks only when info or credits screen is active
+                        if (show_info or show_credits) and button_name == "close":
+                            # If 'close' button is clicked, update screen to show its clicked state
+                            screen.blit(close_buttons[current_button_images["close"]], button_rects["close"])
+                            pygame.display.update()
+                            pygame.mixer.Channel(3).play(backquit_sound)
+                            pygame.time.delay(100)
+                            
+                            # Reset info and credits screen states
+                            show_info = False
+                            show_credits = False
+
                         # Process main menu button clicks only when neither info nor credits screen is active
                         if not (show_info or show_credits):
                             if button_name == "start":
+                                screen.blit(start_buttons[current_button_images["start"]], button_rects["start"])
+                                pygame.display.update()
                                 pygame.mixer.Channel(4).play(start_sound)
                                 menu_music.stop()
                                 game_music.play(-1)
@@ -98,25 +112,24 @@ def main_menu():
                                 running = False
                                 entry.start_game()
                             elif button_name == "info":
+                                screen.blit(info_buttons[current_button_images["info"]], button_rects["info"])
+                                pygame.display.update()
                                 pygame.mixer.Channel(1).play(infocredits_sound)
                                 pygame.time.delay(100)
                                 show_info = True
                             elif button_name == "credits":
+                                screen.blit(credits_buttons[current_button_images["credits"]], button_rects["credits"])
+                                pygame.display.update()
                                 pygame.mixer.Channel(2).play(infocredits_sound)
                                 pygame.time.delay(100)
                                 show_credits = True
                             elif button_name == "quit":
+                                screen.blit(quit_buttons[current_button_images["quit"]], button_rects["quit"])
+                                pygame.display.update()
                                 pygame.mixer.Channel(5).play(backquit_sound)
                                 pygame.time.delay(100)
                                 pygame.quit()
                                 exit()
-
-                        # Process close button clicks only when info or credits screen is active
-                        if (show_info or show_credits) and button_name == "close":
-                            pygame.mixer.Channel(3).play(backquit_sound)
-                            pygame.time.delay(100)
-                            show_info = False
-                            show_credits = False
 
         # Update button images based on hover
         for button_name, rect in button_rects.items():
@@ -146,6 +159,7 @@ def draw_buttons(screen, current_button_images, start_buttons, info_buttons, cre
     screen.blit(info_buttons[current_button_images["info"]], button_rects["info"])
     screen.blit(credits_buttons[current_button_images["credits"]], button_rects["credits"])
     screen.blit(quit_buttons[current_button_images["quit"]], button_rects["quit"])
+
 
 # Check if this script is being run directly (not imported as a module)
 if __name__ == "__main__":
