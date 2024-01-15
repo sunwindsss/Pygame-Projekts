@@ -107,7 +107,7 @@ def main_menu():
                                 pygame.display.update()
                                 pygame.mixer.Channel(4).play(start_sound)
                                 menu_music.stop()
-                                game_music.play(-1)
+                                pygame.mixer.Channel(6).play(game_music, loops=-1)
                                 pygame.time.delay(100)
                                 running = False
                                 entry.start_game()

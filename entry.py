@@ -152,8 +152,10 @@ def game_over_screen():
             screen.blit(mainmenu_imgs[1], mainmenu_rect.topleft)
             if mouse_click:
                 screen.blit(mainmenu_imgs[2], mainmenu_rect.topleft)
-                backquit_sound.play()
-                pygame.time.delay(100)  # Delay to see the image
+                screen.blit(restart_imgs[0], restart_rect.topleft)
+                pygame.display.update()
+                pygame.mixer.Channel(5).play(backquit_sound)
+                pygame.time.delay(100)  # Delay to see the 'clicking' image
                 import start_here  # Import the script containing the main menu
                 pygame.mixer.stop()
                 start_here.main_menu()  # Call main_menu function from start_here
@@ -165,8 +167,10 @@ def game_over_screen():
             screen.blit(restart_imgs[1], restart_rect.topleft)
             if mouse_click:
                 screen.blit(restart_imgs[2], restart_rect.topleft)
-                start_sound.play()
-                pygame.time.delay(100)  # Delay to see the image
+                screen.blit(mainmenu_imgs[0], mainmenu_rect.topleft)
+                pygame.display.update()
+                pygame.mixer.Channel(4).play(start_sound)
+                pygame.time.delay(100)
                 start_game()  # Restart the game
                 break
         else:
