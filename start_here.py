@@ -25,7 +25,7 @@ def load_sounds():
     infocredits_sound.set_volume(0.1)
     backquit_sound.set_volume(0.1)
     menu_music.set_volume(0.1)
-    game_music.set_volume(0.1)
+    game_music.set_volume(0.05)
 
     pygame.mixer.Channel(0).play(menu_music, loops=-1)  # The '-1' argument makes the music play indefinitely
 

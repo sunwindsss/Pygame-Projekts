@@ -88,6 +88,21 @@ def load_images():
     health_pickup_image = pygame.transform.scale(health_pickup_image, (48, 48))
 
 
+def load_sound_effects():
+    """
+    Load and initialize sound effects for the game mode.
+    """
+    global arrow_shoot, death, enemy_hit, take_potion
+    arrow_shoot = pygame.mixer.Sound('sounds/arrow_shoot.wav')
+    death = pygame.mixer.Sound('sounds/death.wav')
+    enemy_hit = pygame.mixer.Sound('sounds/enemy_hit.wav')
+    take_potion = pygame.mixer.Sound('sounds/take_potion.wav')
+
+    take_potion.set_volume(0.3)
+    arrow_shoot.set_volume(0.3)
+    death.set_volume(0.5)
+    enemy_hit.set_volume(0.3)
+
 
 def load_background_tiles():
     """
@@ -249,6 +264,7 @@ def initialize_game():
     set_color_codes()
     set_basic_settings()
     load_images()
+    load_sound_effects()
     load_background_tiles()
     load_game_over_assets()
     create_animation_list()
@@ -285,10 +301,13 @@ def handle_events():
         elif event.type == PLAYER_HIT:
             player_health -= 1
         elif event.type == ENEMY_HIT1:
+            pygame.mixer.Channel(2).play(enemy_hit)
             enemy1_health -= 25
         elif event.type == ENEMY_HIT2:
+            pygame.mixer.Channel(2).play(enemy_hit)
             enemy2_health -= 25
         elif event.type == ENEMY_HIT3:
+            pygame.mixer.Channel(2).play(enemy_hit)
             enemy3_health -= 25
 
         elif event.type == ENEMY_HIT1_MELE:
@@ -300,10 +319,10 @@ def handle_events():
         
         if event.type == pygame.KEYDOWN and current_time - last_shot_time >= 400:
             if event.key == pygame.K_SPACE and len(player_arrows_R) < MAX_ARROWS:
+                pygame.mixer.Channel(1).play(arrow_shoot)
                 arrow_R = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
                 player_arrows_R.append(arrow_R)
                 last_shot_time = current_time
-                print("time upgated")
             if event.key == pygame.K_SPACE and len(player_arrows_L) < MAX_ARROWS:
                 arrow_L = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
                 last_shot_time = current_time
@@ -560,10 +579,11 @@ def handle_health_pickups():
     """
     Handles the health pickups, ensuring that player health doesn't go above 100.
     """
-    global player_health
+    global player_health, take_potion
     player_health = min(player_health + 50, 100) if any(player.colliderect(pickup) for pickup in health_pickups) else player_health
     for pickup in health_pickups[:]:
         if player.colliderect(pickup):
+            pygame.mixer.Channel(3).play(take_potion)
             health_pickups.remove(pickup)
 
 def draw_fps_counter():
@@ -759,6 +779,7 @@ def main_loop():
             enemy3 = pygame.Rect(enemy3_icon_x, enemy3_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
         if player_health <= 0:
+            pygame.mixer.Channel(2).play(death)
             game_over_screen()
             break
 
