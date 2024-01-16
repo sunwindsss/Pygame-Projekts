@@ -413,6 +413,7 @@ def move_icon():
         elif last_lift_up == pygame.K_d:
             action = 10
 
+    #if player health is zero action 12 is enabled, which is death animation
     if player_health <= 0 and dead == False:
         frame = 0 
         action = 12
