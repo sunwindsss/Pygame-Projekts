@@ -6,12 +6,14 @@ def set_static_variables():
     """
     Initializes some basic game variables.
     """
-    global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS, speed, speed_linear, speed_diagonal, MAX_ARROWS, ARROW_SPEED
+    global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS, speed, speed_linear, speed_diagonal, MAX_ARROWS, ARROW_SPEED,WIN, last_shot_time
     WIDTH, HEIGHT = 1000, 800
     BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 100, 100 # Black background size (UNUSED!!)
     PLAYER_WIDTH, PLAYER_HEIGHT = 144, 144 # Attached to some settings in regards to player location on screen
     FPS = 60 # Framerate value for game
-    MAX_ARROWS = 5
+    WIN = pygame.display.set_mode((WIDTH,HEIGHT))
+    MAX_ARROWS = 10 # Max arrows on screen at a time 
+    last_shot_time = 0 # Needed to time arrow shots
     ARROW_SPEED = 7
     speed = 4
     speed_linear = 4
@@ -58,7 +60,7 @@ def load_images():
         sprite_sheet: SpriteSheet object for managing player sprite animations
         black_background: Surface for black background (temporary)
     """
-    global sprite_sheet, black_background, enemy_sprite_sheet1, enemy_sprite_sheet2, enemy_sprite_sheet3
+    global sprite_sheet, black_background, enemy_sprite_sheet1, enemy_sprite_sheet2, enemy_sprite_sheet3, iron_arrow_R, iron_arrow_L, iron_arrow_UP, iron_arrow_DOWN
     global health_pickup_image
 
     sprite_sheet_image = pygame.image.load('images/player.png').convert_alpha()
@@ -72,6 +74,12 @@ def load_images():
 
     enemy_sprite_sheet_image3 = pygame.image.load('images/enemy2.png').convert_alpha()
     enemy_sprite_sheet3 = spritesheet.SpriteSheet(enemy_sprite_sheet_image3)
+
+    iron_arrow_R = pygame.image.load('images/iron arrow R.png')
+    iron_arrow_L = pygame.image.load('images/iron arrow L.png')
+    iron_arrow_UP = pygame.image.load('images/iron arrow UP.png')
+    iron_arrow_DOWN = pygame.image.load('images/iron arrow DOWN.png')
+    #iron_arrow_R = pygame.transform.scale(iron_arrow_R_image, 64, 64)
 
     black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT)) # NOT USED ANYMORE
     black_background.fill(BLACK) # NOT USED ANYMORE
@@ -253,6 +261,10 @@ ENEMY_HIT1 = pygame.USEREVENT + 2
 ENEMY_HIT2 = pygame.USEREVENT + 3
 ENEMY_HIT3 = pygame.USEREVENT + 4
 
+ENEMY_HIT1_MELE = pygame.USEREVENT + 5
+ENEMY_HIT2_MELE = pygame.USEREVENT + 6
+ENEMY_HIT3_MELE = pygame.USEREVENT + 7
+
 def handle_events():
     """
     Iterates through all Pygame events, such as key presses or closing the game window,
@@ -264,7 +276,7 @@ def handle_events():
         running: Game status
         last_lift_up: The last key that was released
     """
-    global running, last_lift_up, player_health, enemy1_health, enemy2_health, enemy3_health
+    global running, last_lift_up, player_health, enemy1_health, enemy2_health, enemy3_health, last_shot_time, current_time
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -273,16 +285,39 @@ def handle_events():
         elif event.type == PLAYER_HIT:
             player_health -= 1
         elif event.type == ENEMY_HIT1:
-            enemy1_health -= 1
+            enemy1_health -= 25
         elif event.type == ENEMY_HIT2:
-            enemy2_health -= 1
+            enemy2_health -= 25
         elif event.type == ENEMY_HIT3:
-            enemy3_health -= 1
+            enemy3_health -= 25
 
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and len(player_arrows) < MAX_ARROWS:
-                bullet = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
-                player_arrows.append(bullet)
+        elif event.type == ENEMY_HIT1_MELE:
+            enemy1_health -= 1
+        elif event.type == ENEMY_HIT2_MELE:
+            enemy2_health -= 1
+        elif event.type == ENEMY_HIT3_MELE:
+            enemy3_health -= 1
+        
+        if event.type == pygame.KEYDOWN and current_time - last_shot_time >= 400:
+            if event.key == pygame.K_SPACE and len(player_arrows_R) < MAX_ARROWS:
+                arrow_R = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
+                player_arrows_R.append(arrow_R)
+                last_shot_time = current_time
+                print("time upgated")
+            if event.key == pygame.K_SPACE and len(player_arrows_L) < MAX_ARROWS:
+                arrow_L = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
+                last_shot_time = current_time
+                player_arrows_L.append(arrow_L)
+            if event.key == pygame.K_SPACE and len(player_arrows_UP) < MAX_ARROWS:
+                arrow_UP = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
+                player_arrows_UP.append(arrow_UP)
+                last_shot_time = current_time
+            if event.key == pygame.K_SPACE and len(player_arrows_DOWN) < MAX_ARROWS:
+                arrow_DOWN = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
+                player_arrows_DOWN.append(arrow_DOWN)
+                last_shot_time = current_time
+
+            
             
 
 
@@ -323,7 +358,7 @@ def move_icon():
     adjusting the speed for diagonal or linear movement. 
     Determines the appropriate animation sequence to use based on the direction of movement.
     """
-    global icon_x, icon_y, player, action, frame, animation_completed
+    global icon_x, icon_y, player, action, frame, animation_completed, last_shot_time
     keys = pygame.key.get_pressed()
 
     # Adjust speed based on linear or diagonal movement
@@ -360,7 +395,7 @@ def move_icon():
             action = 5
         elif last_lift_up == pygame.K_d:
             action = 6
-    
+
     if keys[pygame.K_SPACE] and not keys[pygame.K_w] and not keys[pygame.K_s] and not keys[pygame.K_a] and not keys[pygame.K_d]:
         animation_completed = False
         if last_lift_up == pygame.K_w:
@@ -448,7 +483,7 @@ def calculate_camera_offset():
     camera_x = player.x - (WIDTH / 2) + (PLAYER_WIDTH / 3) - 26
     camera_y = player.y - (HEIGHT / 2) + (PLAYER_HEIGHT / 3) - 26
 
-def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation_list2, enemy_animation_list3):
+def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation_list2, enemy_animation_list3, player_arrows_R, player_arrows_L, player_arrows_UP, player_arrows_DOWN):
 
     """
     Draws the necessary background tiles and the player icon on the screen.
@@ -474,6 +509,15 @@ def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation
     screen.blit(enemy_animation_list2[enemy_action][enemy_frame], (enemy2.x - camera_x - 10, enemy2.y - camera_y - 15))
     screen.blit(enemy_animation_list3[enemy_action][enemy_frame], (enemy3.x - camera_x - 10, enemy3.y - camera_y - 15))
     screen.blit(animation_list[action][frame], (player.x - camera_x - PLAYER_WIDTH/3, player.y - camera_y - PLAYER_HEIGHT/3))
+    
+    for arrow_R in player_arrows_R:
+        screen.blit(iron_arrow_R, (arrow_R.x - camera_x + 77, arrow_R.y - camera_y + 18))
+    for arrow_L in player_arrows_L:
+        screen.blit(iron_arrow_L, (arrow_L.x - camera_x, arrow_L.y - camera_y + 18))
+    for arrow_UP in player_arrows_UP:
+        screen.blit(iron_arrow_UP, (arrow_UP.x - camera_x + 40, arrow_UP.y - camera_y - 40))
+    for arrow_DOWN in player_arrows_DOWN:
+        screen.blit(iron_arrow_DOWN, (arrow_DOWN.x - camera_x + 38, arrow_DOWN.y - camera_y + 60))
     health_bar.draw(screen)
 
     #ONLY FOR DEBUGGING ENEMY HITBOXES
@@ -526,26 +570,94 @@ def player_damage(player, enemy1, enemy2, enemy3):
 
 def enemy_damage(player, enemy1, enemy2, enemy3):
     if player.colliderect(enemy1):
-        pygame.event.post(pygame.event.Event(ENEMY_HIT1))
+        pygame.event.post(pygame.event.Event(ENEMY_HIT1_MELE))
     if player.colliderect(enemy2):
-        pygame.event.post(pygame.event.Event(ENEMY_HIT2))
+        pygame.event.post(pygame.event.Event(ENEMY_HIT2_MELE))
     if player.colliderect(enemy3):
-        pygame.event.post(pygame.event.Event(ENEMY_HIT3))
+        pygame.event.post(pygame.event.Event(ENEMY_HIT3_MELE))
 
-def handle_arrows(player_arrows):
-    for arrow in player_arrows:
-        arrow.x += ARROW_SPEED
-        if enemy1.colliderect(arrow):
-            pygame.event.post(pygame.event.Event(ENEMY_HIT1))
-            player_arrows.remove(arrow)
-        if enemy2.colliderect(arrow):
-            pygame.event.post(pygame.event.Event(ENEMY_HIT2))
-            player_arrows.remove(arrow)
-        if enemy3.colliderect(arrow):
-            pygame.event.post(pygame.event.Event(ENEMY_HIT3))
-            player_arrows.remove(arrow)
-        elif arrow.x > WIDTH:
-            player_arrows.remove(arrow)
+
+def handle_arrows_R(player_arrows_R, action):
+    global arrow_R 
+    for arrow_R in player_arrows_R:
+        if action == 6 or action == 10 or arrow_R.x > player.x:
+            arrow_R.x += ARROW_SPEED
+            if enemy1.colliderect(arrow_R):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT1))
+                player_arrows_R.remove(arrow_R)
+            if enemy2.colliderect(arrow_R):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT2))
+                player_arrows_R.remove(arrow_R)
+            if enemy3.colliderect(arrow_R):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT3))
+                player_arrows_R.remove(arrow_R)
+            elif arrow_R.x > player.x+700 or arrow_R.x < player.x-700:
+                player_arrows_R.remove(arrow_R)
+        else:
+            player_arrows_R.remove(arrow_R)
+
+def handle_arrows_L(player_arrows_L, action):
+    global arrow_L
+    for arrow_L in  player_arrows_L:
+        if action == 5 or action == 9 or arrow_L.x < player.x:
+            arrow_L.x -= ARROW_SPEED
+            if enemy1.colliderect(arrow_L):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT1))
+                player_arrows_L.remove(arrow_L)
+            if enemy2.colliderect(arrow_L):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT2))
+                player_arrows_L.remove(arrow_L)
+            if enemy3.colliderect(arrow_L):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT3))
+                player_arrows_L.remove(arrow_L)
+            elif arrow_L.x > player.x+700 or arrow_L.x < player.x-700:
+                player_arrows_L.remove(arrow_L)
+        else:
+            player_arrows_L.remove(arrow_L)
+
+def handle_arrows_UP(player_arrows_UP, action):
+    global arrow_UP
+    for arrow_UP in  player_arrows_UP:
+        if action == 7 or action == 11 or arrow_UP.y < player.y:
+            arrow_UP.y -= ARROW_SPEED
+            if enemy1.colliderect(arrow_UP):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT1))
+                player_arrows_UP.remove(arrow_UP)
+            if enemy2.colliderect(arrow_UP):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT2))
+                player_arrows_UP.remove(arrow_UP)
+            if enemy3.colliderect(arrow_UP):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT3))
+                player_arrows_UP.remove(arrow_UP)
+            elif arrow_UP.y > player.y+700 or arrow_UP.y < player.y-700:
+                player_arrows_UP.remove(arrow_UP)
+        else:
+            player_arrows_UP.remove(arrow_UP)
+
+def handle_arrows_DOWN(player_arrows_DOWN, action):
+    global arrow_DOWN
+    for arrow_DOWN in  player_arrows_DOWN:
+        if action == 4 or action == 8 or arrow_DOWN.y > player.y + 40:
+            arrow_DOWN.y += ARROW_SPEED
+            if enemy1.colliderect(arrow_DOWN):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT1))
+                player_arrows_DOWN.remove(arrow_DOWN)
+            if enemy2.colliderect(arrow_DOWN):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT2))
+                player_arrows_DOWN.remove(arrow_DOWN)
+            if enemy3.colliderect(arrow_DOWN):
+                pygame.event.post(pygame.event.Event(ENEMY_HIT3))
+                player_arrows_DOWN.remove(arrow_DOWN)
+            elif arrow_DOWN.y > player.y+700 or arrow_DOWN.y < player.y-700:
+                player_arrows_DOWN.remove(arrow_DOWN)
+        else:
+            player_arrows_DOWN.remove(arrow_DOWN)
+
+def handle_arrows_all(player_arrows_R, player_arrows_L, player_arrows_UP, action):
+    handle_arrows_R(player_arrows_R, action)
+    handle_arrows_L(player_arrows_L, action)
+    handle_arrows_UP(player_arrows_UP, action)
+    handle_arrows_DOWN(player_arrows_DOWN, action)
 
 class HealthBar():
     def __init__(self, x, y, w, h, max_hp):
@@ -565,32 +677,34 @@ def main_loop():
     Runs the main game loop and processes game events.
     The loop continues until the global variable `running` becomes False, and then quits the game.
     """
-    global running,player_health, player, health_bar, enemy1_health, enemy2_health, enemy3_health, score, player_arrows, enemy1, enemy2, enemy3
+    global running,player_health, player, health_bar, enemy1_health, enemy2_health, enemy3_health, score, player_arrows_R, player_arrows_L, player_arrows_UP, player_arrows_DOWN, enemy1, enemy2, enemy3, current_time
     global health_pickups
-    
+
     health_pickups = []
 
-    player = pygame.Rect(icon_x, icon_y, PLAYER_WIDTH/3, PLAYER_HEIGHT/2)
+    player = pygame.Rect(icon_x, icon_y, PLAYER_WIDTH/3,PLAYER_HEIGHT/2)
     health_bar = HealthBar(250, 250, 300, 40, 100)
-    player_arrows = []
+    player_arrows_R = []
+    player_arrows_L = []
+    player_arrows_UP = []
+    player_arrows_DOWN = []
     player_health = 100
+
     
-
-
     enemy1_coordinate = enemy_spawn(player)
     enemy1_icon_x = enemy1_coordinate[0]
     enemy1_icon_y = enemy1_coordinate[1]
-    enemy1_health = 20
+    enemy1_health = 50
 
     enemy2_coordinate = enemy_spawn(player)
     enemy2_icon_x = enemy2_coordinate[0]
     enemy2_icon_y = enemy2_coordinate[1]
-    enemy2_health = 20
+    enemy2_health = 50
 
     enemy3_coordinate = enemy_spawn(player)
     enemy3_icon_x = enemy3_coordinate[0]
     enemy3_icon_y = enemy3_coordinate[1]
-    enemy3_health = 20
+    enemy3_health = 50
 
     score = 0
 
@@ -598,35 +712,35 @@ def main_loop():
     enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
     enemy3 = pygame.Rect(enemy3_icon_x, enemy3_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
-    game_over = False
     while running:
-        if enemy1_health == 0:
+        current_time = pygame.time.get_ticks()
+        if enemy1_health <= 0:
             if score % 5 == 0:
                 generate_health_pickup(enemy1.x, enemy1.y)
             score += 1
             enemy1_coordinate = enemy_spawn(player)
             enemy1_icon_x = enemy1_coordinate[0]
             enemy1_icon_y = enemy1_coordinate[1]
-            enemy1_health = 20
+            enemy1_health = 50
             enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
-        if enemy2_health == 0:
+        if enemy2_health <= 0:
             if score % 5 == 0:
                 generate_health_pickup(enemy2.x, enemy2.y)
             score +=1
             enemy2_coordinate = enemy_spawn(player)
             enemy2_icon_x = enemy2_coordinate[0]
             enemy2_icon_y = enemy2_coordinate[1]
-            enemy2_health = 20
+            enemy2_health = 50
             enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
-        if enemy3_health == 0:
+        if enemy3_health <= 0:
             if score % 5 == 0:
                 generate_health_pickup(enemy3.x, enemy3.y)
             score +=1
             enemy3_coordinate = enemy_spawn(player)
             enemy3_icon_x = enemy3_coordinate[0]
             enemy3_icon_y = enemy3_coordinate[1]
-            enemy3_health = 20
-            enemy3 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
+            enemy3_health = 50
+            enemy3 = pygame.Rect(enemy3_icon_x, enemy3_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
         if player_health <= 0:
             game_over_screen()
@@ -634,7 +748,7 @@ def main_loop():
 
         health_bar.hp = player_health
         handle_events()
-        handle_arrows(player_arrows)
+        handle_arrows_all(player_arrows_R, player_arrows_L, player_arrows_UP, action)
         player_damage(player, enemy1, enemy2, enemy3)
         enemy_damage(player, enemy1, enemy2, enemy3)
         update_animation()
@@ -645,7 +759,7 @@ def main_loop():
         enemy_pathfinding(enemy3, player)
         handle_health_pickups()
         calculate_camera_offset()
-        draw_elements(enemy1, enemy2, enemy3, animation_list1, animation_list2, animation_list3)
+        draw_elements(enemy1, enemy2, enemy3, animation_list1, animation_list2, animation_list3, player_arrows_R, player_arrows_L, player_arrows_UP, player_arrows_DOWN)
         draw_fps_counter()
 
         if player_health<100:
