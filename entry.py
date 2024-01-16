@@ -88,6 +88,21 @@ def load_images():
     health_pickup_image = pygame.transform.scale(health_pickup_image, (48, 48))
 
 
+def load_sound_effects():
+    """
+    Load and initialize sound effects for the game mode.
+    """
+    global arrow_shoot, death, enemy_hit, take_potion
+    arrow_shoot = pygame.mixer.Sound('sounds/arrow_shoot.wav')
+    death = pygame.mixer.Sound('sounds/death.wav')
+    enemy_hit = pygame.mixer.Sound('sounds/enemy_hit.wav')
+    take_potion = pygame.mixer.Sound('sounds/take_potion.wav')
+
+    take_potion.set_volume(0.3)
+    arrow_shoot.set_volume(0.3)
+    death.set_volume(0.5)
+    enemy_hit.set_volume(0.3)
+
 
 def load_background_tiles():
     """
@@ -201,7 +216,7 @@ def create_animation_list():
     """
     global animation_list, action, frame, step_counter, last_update, animation_cooldown, last_lift_up, animation_completed
     animation_list = []
-    animation_steps = [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
+    animation_steps = [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7]
     last_update = pygame.time.get_ticks() # Controls animation speed
     animation_cooldown = 150
     action = 4 # Animation that will be set as default when game starts
@@ -249,6 +264,7 @@ def initialize_game():
     set_color_codes()
     set_basic_settings()
     load_images()
+    load_sound_effects()
     load_background_tiles()
     load_game_over_assets()
     create_animation_list()
@@ -276,7 +292,7 @@ def handle_events():
         running: Game status
         last_lift_up: The last key that was released
     """
-    global running, last_lift_up, player_health, enemy1_health, enemy2_health, enemy3_health, last_shot_time, current_time
+    global running, last_lift_up, player_health, enemy1_health, enemy2_health, enemy3_health, last_shot_time, current_time, action, frame
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -285,10 +301,13 @@ def handle_events():
         elif event.type == PLAYER_HIT:
             player_health -= 1
         elif event.type == ENEMY_HIT1:
+            pygame.mixer.Channel(2).play(enemy_hit)
             enemy1_health -= 25
         elif event.type == ENEMY_HIT2:
+            pygame.mixer.Channel(2).play(enemy_hit)
             enemy2_health -= 25
         elif event.type == ENEMY_HIT3:
+            pygame.mixer.Channel(2).play(enemy_hit)
             enemy3_health -= 25
 
         elif event.type == ENEMY_HIT1_MELE:
@@ -300,10 +319,10 @@ def handle_events():
         
         if event.type == pygame.KEYDOWN and current_time - last_shot_time >= 400:
             if event.key == pygame.K_SPACE and len(player_arrows_R) < MAX_ARROWS:
+                pygame.mixer.Channel(1).play(arrow_shoot)
                 arrow_R = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
                 player_arrows_R.append(arrow_R)
                 last_shot_time = current_time
-                print("time upgated")
             if event.key == pygame.K_SPACE and len(player_arrows_L) < MAX_ARROWS:
                 arrow_L = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
                 last_shot_time = current_time
@@ -316,6 +335,11 @@ def handle_events():
                 arrow_DOWN = pygame.Rect(player.x + 20, player.y + player.height//2 - 2, 10, 5)
                 player_arrows_DOWN.append(arrow_DOWN)
                 last_shot_time = current_time
+            if event.key == pygame.K_l: #possibility to end game at any time
+                print("Death triggered")
+                frame = 0
+                action = 12
+
 
             
             
@@ -358,7 +382,7 @@ def move_icon():
     adjusting the speed for diagonal or linear movement. 
     Determines the appropriate animation sequence to use based on the direction of movement.
     """
-    global icon_x, icon_y, player, action, frame, animation_completed, last_shot_time
+    global icon_x, icon_y, player, action, frame, animation_completed, last_shot_time, dead
     keys = pygame.key.get_pressed()
 
     # Adjust speed based on linear or diagonal movement
@@ -368,24 +392,25 @@ def move_icon():
         speed = speed_linear  # Adjust speed for non-diagonal movement
 
     # Move the icon based on the pressed keys and use appropriate animations
-    if keys[pygame.K_s]:
-        player.y += speed
-        action = 0
-        animation_completed = False
-    if keys[pygame.K_d]:
-        player.x += speed
-        action = 2
-        animation_completed = False
-    if keys[pygame.K_a]:
-        player.x -= speed
-        action = 1
-        animation_completed = False
-    if keys[pygame.K_w]:
-        player.y -= speed
-        action = 3
-        animation_completed = False
+    if dead == False:
+        if keys[pygame.K_s]:
+            player.y += speed
+            action = 0
+            animation_completed = False
+        if keys[pygame.K_d]:
+            player.x += speed
+            action = 2
+            animation_completed = False
+        if keys[pygame.K_a]:
+            player.x -= speed
+            action = 1
+            animation_completed = False
+        if keys[pygame.K_w]:
+            player.y -= speed
+            action = 3
+            animation_completed = False
 
-    if sum(keys) == 0 and last_lift_up != pygame.K_SPACE:
+    if sum(keys) == 0 and last_lift_up != pygame.K_SPACE and dead == False:
         animation_completed = False
         if last_lift_up == pygame.K_w:
             action = 7
@@ -396,7 +421,7 @@ def move_icon():
         elif last_lift_up == pygame.K_d:
             action = 6
 
-    if keys[pygame.K_SPACE] and not keys[pygame.K_w] and not keys[pygame.K_s] and not keys[pygame.K_a] and not keys[pygame.K_d]:
+    if keys[pygame.K_SPACE] and not keys[pygame.K_w] and not keys[pygame.K_s] and not keys[pygame.K_a] and not keys[pygame.K_d] and dead == False:
         animation_completed = False
         if last_lift_up == pygame.K_w:
             action = 11
@@ -406,6 +431,13 @@ def move_icon():
             action = 9
         elif last_lift_up == pygame.K_d:
             action = 10
+
+    if player_health <= 0 and dead == False:
+        pygame.mixer.Channel(2).play(death)
+        frame = 0 
+        action = 12
+        dead = True
+        print("Player dies")
     
 def get_background_tiles():
     """
@@ -512,13 +544,13 @@ def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation
     
     # Arrow image drawing
     for arrow_R in player_arrows_R:
-        screen.blit(iron_arrow_R, (arrow_R.x - camera_x, arrow_R.y - camera_y + 18))
+        screen.blit(iron_arrow_R, (arrow_R.x - camera_x -25, arrow_R.y - camera_y -27))
     for arrow_L in player_arrows_L:
-        screen.blit(iron_arrow_L, (arrow_L.x - camera_x, arrow_L.y - camera_y + 18))
+        screen.blit(iron_arrow_L, (arrow_L.x - camera_x -25, arrow_L.y - camera_y -27))
     for arrow_UP in player_arrows_UP:
-        screen.blit(iron_arrow_UP, (arrow_UP.x - camera_x + 40, arrow_UP.y - camera_y - 40))
+        screen.blit(iron_arrow_UP, (arrow_UP.x - camera_x -25, arrow_UP.y - camera_y - 27))
     for arrow_DOWN in player_arrows_DOWN:
-        screen.blit(iron_arrow_DOWN, (arrow_DOWN.x - camera_x + 38, arrow_DOWN.y - camera_y + 60))
+        screen.blit(iron_arrow_DOWN, (arrow_DOWN.x - camera_x -29, arrow_DOWN.y - camera_y -27))
     health_bar.draw(screen)
 
     # ARROW HITBOX DEBUGGING
@@ -560,10 +592,13 @@ def handle_health_pickups():
     """
     Handles the health pickups, ensuring that player health doesn't go above 100.
     """
-    global player_health
+    global player_health, take_potion, dead
+    if dead == True:
+        return
     player_health = min(player_health + 50, 100) if any(player.colliderect(pickup) for pickup in health_pickups) else player_health
     for pickup in health_pickups[:]:
         if player.colliderect(pickup):
+            pygame.mixer.Channel(3).play(take_potion)
             health_pickups.remove(pickup)
 
 def draw_fps_counter():
@@ -693,7 +728,7 @@ def main_loop():
     Runs the main game loop and processes game events.
     The loop continues until the global variable `running` becomes False, and then quits the game.
     """
-    global running,player_health, player, health_bar, enemy1_health, enemy2_health, enemy3_health, score, player_arrows_R, player_arrows_L, player_arrows_UP, player_arrows_DOWN, enemy1, enemy2, enemy3, current_time
+    global running,player_health, player, health_bar, enemy1_health, enemy2_health, enemy3_health, score, player_arrows_R, player_arrows_L, player_arrows_UP, player_arrows_DOWN, enemy1, enemy2, enemy3, current_time, dead, frame, action
     global health_pickups
 
     health_pickups = []
@@ -723,6 +758,8 @@ def main_loop():
     enemy3_health = 50
 
     score = 0
+
+    dead = False
 
     enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
     enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
@@ -758,9 +795,13 @@ def main_loop():
             enemy3_health = 50
             enemy3 = pygame.Rect(enemy3_icon_x, enemy3_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
-        if player_health <= 0:
+        # death animation execution
+        if frame == 6 and action == 12:
+            print("Game over")
             game_over_screen()
             break
+
+            
 
         health_bar.hp = player_health
         handle_events()
