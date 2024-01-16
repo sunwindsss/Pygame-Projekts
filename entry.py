@@ -516,6 +516,7 @@ def enemy_damage(player, enemy1, enemy2, enemy3):
     if player.colliderect(enemy3):
         pygame.event.post(pygame.event.Event(ENEMY_HIT3_MELE))
 
+
 def handle_arrows_R(player_arrows_R, action):
     global arrow_R
     for arrow_R in player_arrows_R:
@@ -553,6 +554,11 @@ def handle_arrows_L(player_arrows_L, action):
                 player_arrows_L.remove(arrow_L)
         else:
             player_arrows_L.remove(arrow_L)
+
+def handle_arrows_all(player_arrows_R, player_arrows_L, action):
+    handle_arrows_R(player_arrows_R, action)
+    handle_arrows_L(player_arrows_L, action)
+
 class HealthBar():
     def __init__(self, x, y, w, h, max_hp):
         self.x = x 
@@ -603,7 +609,9 @@ def main_loop():
     enemy3 = pygame.Rect(enemy3_icon_x, enemy3_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
     game_over = False
+    last_shot_time = 0
     while running:
+        current_time = pygame.time.get_ticks()
         if enemy1_health <= 0:
             score += 1
             enemy1_coordinate = enemy_spawn(player)
@@ -632,8 +640,9 @@ def main_loop():
 
         health_bar.hp = player_health
         handle_events()
-        handle_arrows_R(player_arrows_R, action)
-        handle_arrows_L(player_arrows_L, action)
+
+        handle_arrows_all(player_arrows_R, player_arrows_L, action)
+        
         player_damage(player, enemy1, enemy2, enemy3)
         enemy_damage(player, enemy1, enemy2, enemy3)
         update_animation()
