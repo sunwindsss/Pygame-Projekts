@@ -618,7 +618,6 @@ def main_loop():
             enemy2_icon_y = enemy2_coordinate[1]
             enemy2_health = 50
             enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
-            print(enemy2_icon_x, enemy2_icon_y)
         if enemy3_health <= 0:
             score +=1
             enemy3_coordinate = enemy_spawn(player)
