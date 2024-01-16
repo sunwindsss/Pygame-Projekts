@@ -309,11 +309,11 @@ def handle_events():
                 last_shot_time = current_time
                 player_arrows_L.append(arrow_L)
             if event.key == pygame.K_SPACE and len(player_arrows_UP) < MAX_ARROWS:
-                arrow_UP = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
+                arrow_UP = pygame.Rect(player.x + 18, player.y + player.height//2 - 2, 10, 5)
                 player_arrows_UP.append(arrow_UP)
                 last_shot_time = current_time
             if event.key == pygame.K_SPACE and len(player_arrows_DOWN) < MAX_ARROWS:
-                arrow_DOWN = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
+                arrow_DOWN = pygame.Rect(player.x + 20, player.y + player.height//2 - 2, 10, 5)
                 player_arrows_DOWN.append(arrow_DOWN)
                 last_shot_time = current_time
 
@@ -510,8 +510,9 @@ def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation
     screen.blit(enemy_animation_list3[enemy_action][enemy_frame], (enemy3.x - camera_x - 10, enemy3.y - camera_y - 15))
     screen.blit(animation_list[action][frame], (player.x - camera_x - PLAYER_WIDTH/3, player.y - camera_y - PLAYER_HEIGHT/3))
     
+    # Arrow image drawing
     for arrow_R in player_arrows_R:
-        screen.blit(iron_arrow_R, (arrow_R.x - camera_x + 77, arrow_R.y - camera_y + 18))
+        screen.blit(iron_arrow_R, (arrow_R.x - camera_x, arrow_R.y - camera_y + 18))
     for arrow_L in player_arrows_L:
         screen.blit(iron_arrow_L, (arrow_L.x - camera_x, arrow_L.y - camera_y + 18))
     for arrow_UP in player_arrows_UP:
@@ -520,24 +521,39 @@ def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation
         screen.blit(iron_arrow_DOWN, (arrow_DOWN.x - camera_x + 38, arrow_DOWN.y - camera_y + 60))
     health_bar.draw(screen)
 
+    # ARROW HITBOX DEBUGGING
+    for arrow_R in player_arrows_R:
+        #RIGHT ARROW
+        pygame.draw.rect(screen, (0, 255, 255), (arrow_R.x - camera_x, arrow_R.y - camera_y, arrow_R.width, arrow_R.height), 2) # Blue
+    for arrow_L in player_arrows_L:
+        #LEFT ARROW
+        pygame.draw.rect(screen, (125, 125, 255), (arrow_L.x - camera_x, arrow_L.y - camera_y, arrow_L.width, arrow_L.height), 2) # Blue
+    for arrow_UP in player_arrows_UP:
+        #UP ARROW
+        pygame.draw.rect(screen, (255, 255, 120), (arrow_UP.x - camera_x, arrow_UP.y - camera_y, arrow_UP.width, arrow_UP.height), 2) # Blue
+    for arrow_DOWN in player_arrows_DOWN:
+        #DOWN ARROW
+        pygame.draw.rect(screen, (255, 0, 255), (arrow_DOWN.x - camera_x, arrow_DOWN.y - camera_y, arrow_DOWN.width, arrow_DOWN.height), 2) # Blue
+
     #ONLY FOR DEBUGGING ENEMY HITBOXES
-    #for enemy, enemy_animation_list in [(enemy1, enemy_animation_list1), (enemy2, enemy_animation_list2), (enemy3, enemy_animation_list3)]:
+    for enemy, enemy_animation_list in [(enemy1, enemy_animation_list1), (enemy2, enemy_animation_list2), (enemy3, enemy_animation_list3)]:
         #screen.blit(enemy_animation_list[enemy_action][enemy_frame], (enemy.x - camera_x-10, enemy.y - camera_y-15))
-        #pygame.draw.rect(screen, (255, 255, 0), (enemy.x - camera_x, enemy.y - camera_y, enemy.width, enemy.height), 2)
+        pygame.draw.rect(screen, (255, 255, 0), (enemy.x - camera_x, enemy.y - camera_y, enemy.width, enemy.height), 2)
 
     #DEBUGGING PLAYER HITBOX
-    #pygame.draw.rect(screen, (0, 255, 0), (player.x - camera_x, player.y - camera_y, player.width, player.height), 2)
+    pygame.draw.rect(screen, (0, 255, 0), (player.x - camera_x, player.y - camera_y, player.width, player.height), 2)
 
     for pickup in health_pickups:
         screen.blit(health_pickup_image, (pickup.x - camera_x, pickup.y - camera_y -10))
         #DEBUGGING PICKUP HITBOXES
-        #pygame.draw.rect(screen, (255, 0, 0), (pickup.x - camera_x, pickup.y - camera_y, pickup.width, pickup.height), 2)
+        pygame.draw.rect(screen, (255, 0, 0), (pickup.x - camera_x, pickup.y - camera_y, pickup.width, pickup.height), 2)
+
 
 def generate_health_pickup(x, y):
     """
     Generates a health pickup at the specified coordinates.
     """
-    health_pickup = pygame.Rect(x + PLAYER_WIDTH/2 - 12, y + PLAYER_HEIGHT/2 - 12, 48, 40)
+    health_pickup = pygame.Rect(x + PLAYER_WIDTH/2 - 60, y + PLAYER_HEIGHT/2 - 60, 48, 40)
     health_pickups.append(health_pickup)
 
 def handle_health_pickups():
