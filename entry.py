@@ -6,13 +6,14 @@ def set_static_variables():
     """
     Initializes some basic game variables.
     """
-    global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS, speed, speed_linear, speed_diagonal, MAX_ARROWS, ARROW_SPEED,WIN
+    global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS, speed, speed_linear, speed_diagonal, MAX_ARROWS, ARROW_SPEED,WIN, last_shot_time
     WIDTH, HEIGHT = 1000, 800
     BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 100, 100 # Black background size (UNUSED!!)
     PLAYER_WIDTH, PLAYER_HEIGHT = 144, 144 # Attached to some settings in regards to player location on screen
     FPS = 60 # Framerate value for game
     WIN = pygame.display.set_mode((WIDTH,HEIGHT))
-    MAX_ARROWS = 10
+    MAX_ARROWS = 10 # Max arrows on screen at a time 
+    last_shot_time = 0 # Needed to time arrow shots
     ARROW_SPEED = 7
     speed = 4
     speed_linear = 4
@@ -269,7 +270,7 @@ def handle_events():
         running: Game status
         last_lift_up: The last key that was released
     """
-    global running, last_lift_up, player_health, enemy1_health, enemy2_health, enemy3_health
+    global running, last_lift_up, player_health, enemy1_health, enemy2_health, enemy3_health, last_shot_time, current_time
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -290,7 +291,8 @@ def handle_events():
             enemy2_health -= 1
         elif event.type == ENEMY_HIT3_MELE:
             enemy3_health -= 1
-        if event.type == pygame.KEYDOWN:
+        
+        if event.type == pygame.KEYDOWN and current_time - last_shot_time >= 400:
             if event.key == pygame.K_SPACE and len(player_arrows_R) < MAX_ARROWS:
                 arrow_R = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
                 player_arrows_R.append(arrow_R)
@@ -303,6 +305,7 @@ def handle_events():
             if event.key == pygame.K_SPACE and len(player_arrows_DOWN) < MAX_ARROWS:
                 arrow_DOWN = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
                 player_arrows_DOWN.append(arrow_DOWN)
+            last_shot_time = current_time
             
             
 
@@ -344,7 +347,7 @@ def move_icon():
     adjusting the speed for diagonal or linear movement. 
     Determines the appropriate animation sequence to use based on the direction of movement.
     """
-    global icon_x, icon_y, player, action, frame, animation_completed
+    global icon_x, icon_y, player, action, frame, animation_completed, last_shot_time
     keys = pygame.key.get_pressed()
 
     # Adjust speed based on linear or diagonal movement
@@ -381,7 +384,7 @@ def move_icon():
             action = 5
         elif last_lift_up == pygame.K_d:
             action = 6
-    
+
     if keys[pygame.K_SPACE] and not keys[pygame.K_w] and not keys[pygame.K_s] and not keys[pygame.K_a] and not keys[pygame.K_d]:
         animation_completed = False
         if last_lift_up == pygame.K_w:
@@ -534,7 +537,7 @@ def enemy_damage(player, enemy1, enemy2, enemy3):
 
 
 def handle_arrows_R(player_arrows_R, action):
-    global arrow_R, last_shot_time
+    global arrow_R 
     for arrow_R in player_arrows_R:
         if action == 6 or action == 10 or arrow_R.x > player.x:
             arrow_R.x += ARROW_SPEED
@@ -633,7 +636,7 @@ def main_loop():
     Runs the main game loop and processes game events.
     The loop continues until the global variable `running` becomes False, and then quits the game.
     """
-    global running,player_health, player, health_bar, enemy1_health, enemy2_health, enemy3_health, score, player_arrows_R, player_arrows_L, player_arrows_UP, player_arrows_DOWN, enemy1, enemy2, enemy3
+    global running,player_health, player, health_bar, enemy1_health, enemy2_health, enemy3_health, score, player_arrows_R, player_arrows_L, player_arrows_UP, player_arrows_DOWN, enemy1, enemy2, enemy3, current_time
 
     player = pygame.Rect(icon_x, icon_y, PLAYER_WIDTH/3,PLAYER_HEIGHT/2)
     health_bar = HealthBar(250, 250, 300, 40, 100)
@@ -666,6 +669,7 @@ def main_loop():
     enemy3 = pygame.Rect(enemy3_icon_x, enemy3_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
     while running:
+        current_time = pygame.time.get_ticks()
         if enemy1_health <= 0:
             score += 1
             enemy1_coordinate = enemy_spawn(player)
