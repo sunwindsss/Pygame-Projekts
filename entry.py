@@ -236,7 +236,7 @@ def create_animation_list():
 def create_enemy_animation_list(enemy_sprite_sheet):
     global enemy_animation_list, enemy_action, enemy_frame, enemy_step_counter, enemy_last_update, enemy_animation_cooldown
     enemy_animation_list = []
-    enemy_animation_steps = [6, 6, 7, 6]
+    enemy_animation_steps = [6]
     enemy_action = 0
     enemy_last_update = pygame.time.get_ticks()
     enemy_animation_cooldown = 100
@@ -247,7 +247,7 @@ def create_enemy_animation_list(enemy_sprite_sheet):
     for enemy_animation in enemy_animation_steps:
         temp_img_list2 = []
         for _ in range(enemy_animation):
-            temp_img_list2.append(enemy_sprite_sheet.get_image(enemy_step_counter, 24, 24, 4, BLACK))
+            temp_img_list2.append(enemy_sprite_sheet.get_image(enemy_step_counter, 32, 32, 4, BLACK))
             enemy_step_counter += 1
         enemy_animation_list.append(temp_img_list2)
     
@@ -482,10 +482,10 @@ def enemy_pathfinding(enemy, player):
 
     if player.x > enemy.x:
         enemy.x += speed/2
-        enemy_action = 1
+        enemy_action = 0
     if player.x < enemy.x:
         enemy.x -= speed/2
-        enemy_action = 3
+        enemy_action = 0
     if player.y > enemy.y:
         enemy.y += speed/2
     if player.y < enemy.y:
