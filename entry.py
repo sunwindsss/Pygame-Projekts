@@ -296,16 +296,21 @@ def handle_events():
             if event.key == pygame.K_SPACE and len(player_arrows_R) < MAX_ARROWS:
                 arrow_R = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
                 player_arrows_R.append(arrow_R)
+                last_shot_time = current_time
+                print("time upgated")
             if event.key == pygame.K_SPACE and len(player_arrows_L) < MAX_ARROWS:
                 arrow_L = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
+                last_shot_time = current_time
                 player_arrows_L.append(arrow_L)
             if event.key == pygame.K_SPACE and len(player_arrows_UP) < MAX_ARROWS:
                 arrow_UP = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
                 player_arrows_UP.append(arrow_UP)
+                last_shot_time = current_time
             if event.key == pygame.K_SPACE and len(player_arrows_DOWN) < MAX_ARROWS:
                 arrow_DOWN = pygame.Rect(player.x, player.y + player.height//2 - 2, 10, 5)
                 player_arrows_DOWN.append(arrow_DOWN)
-            last_shot_time = current_time
+                last_shot_time = current_time
+
             
             
 
