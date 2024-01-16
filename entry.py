@@ -433,6 +433,7 @@ def move_icon():
             action = 10
 
     if player_health <= 0 and dead == False:
+        pygame.mixer.Channel(2).play(death)
         frame = 0 
         action = 12
         dead = True
@@ -591,7 +592,9 @@ def handle_health_pickups():
     """
     Handles the health pickups, ensuring that player health doesn't go above 100.
     """
-    global player_health, take_potion
+    global player_health, take_potion, dead
+    if dead == True:
+        return
     player_health = min(player_health + 50, 100) if any(player.colliderect(pickup) for pickup in health_pickups) else player_health
     for pickup in health_pickups[:]:
         if player.colliderect(pickup):
