@@ -724,16 +724,16 @@ class HealthBar():
         pygame.draw.rect(screen, GREEN, (WIDTH/2 - 23, HEIGHT/2 - 60, 50 * ratio, 10))
 
 #Game will no longer crash, and it will add extra unpredictability 
-def handle_enemy_collision(enemy1, enemy2, enemy3):
-    if enemy1.x - enemy2.x <= 70:
-        enemy1.x += speed/2
-        enemy2.x -= speed/2
-    if enemy1.x - enemy3.x <= 70:
-        enemy1.x += speed/2
-        enemy3.x -= speed/2
-    if enemy2.x - enemy3.x <=70:
-        enemy2.x += speed/2
-        enemy3.x -= speed/2
+# def handle_enemy_collision(enemy1, enemy2, enemy3):
+#     if enemy1.x - enemy2.x <= 70:
+#         enemy1.x += speed/2
+#         enemy2.x -= speed/2
+#     if enemy1.x - enemy3.x <= 70:
+#         enemy1.x += speed/2
+#         enemy3.x -= speed/2
+#     if enemy2.x - enemy3.x <=70:
+#         enemy2.x += speed/2
+#         enemy3.x -= speed/2
     
 def main_loop():
     """
