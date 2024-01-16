@@ -512,13 +512,13 @@ def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation
     
     # Arrow image drawing
     for arrow_R in player_arrows_R:
-        screen.blit(iron_arrow_R, (arrow_R.x - camera_x, arrow_R.y - camera_y + 18))
+        screen.blit(iron_arrow_R, (arrow_R.x - camera_x -25, arrow_R.y - camera_y -27))
     for arrow_L in player_arrows_L:
-        screen.blit(iron_arrow_L, (arrow_L.x - camera_x, arrow_L.y - camera_y + 18))
+        screen.blit(iron_arrow_L, (arrow_L.x - camera_x -25, arrow_L.y - camera_y -27))
     for arrow_UP in player_arrows_UP:
-        screen.blit(iron_arrow_UP, (arrow_UP.x - camera_x + 40, arrow_UP.y - camera_y - 40))
+        screen.blit(iron_arrow_UP, (arrow_UP.x - camera_x -25, arrow_UP.y - camera_y - 27))
     for arrow_DOWN in player_arrows_DOWN:
-        screen.blit(iron_arrow_DOWN, (arrow_DOWN.x - camera_x + 38, arrow_DOWN.y - camera_y + 60))
+        screen.blit(iron_arrow_DOWN, (arrow_DOWN.x - camera_x -29, arrow_DOWN.y - camera_y -27))
     health_bar.draw(screen)
 
     # ARROW HITBOX DEBUGGING
