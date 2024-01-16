@@ -59,10 +59,8 @@ def load_images():
         sprite_sheet: SpriteSheet object for managing player sprite animations
         black_background: Surface for black background (temporary)
     """
-    global sprite_sheet, black_background, enemy_sprite_sheet1, enemy_sprite_sheet2, enemy_sprite_sheet3, iron_arrow_R, iron_arrow_L
-    #global background_image # NOT USED ANYMORE
-    #background_image = pygame.image.load('images/grass_bg.png') # NOT USED ANYMORE
-    #background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT)) # NOT USED ANYMORE
+    global sprite_sheet, black_background, enemy_sprite_sheet1, enemy_sprite_sheet2, enemy_sprite_sheet3
+
     sprite_sheet_image = pygame.image.load('images/player.png').convert_alpha()
     sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
 
@@ -118,8 +116,9 @@ def load_game_over_assets():
     gameover_img = pygame.image.load('images/gameover.png').convert_alpha()
     gameover_img = pygame.transform.scale(gameover_img, (WIDTH, HEIGHT))
 
-    mainmenu_imgs = [pygame.image.load(f'images/mainmenu-{i}.png').convert_alpha() for i in range(1, 4)]
-    restart_imgs = [pygame.image.load(f'images/restart-{i}.png').convert_alpha() for i in range(1, 4)]
+    # Load button images and rescale them
+    mainmenu_imgs = [pygame.transform.scale(pygame.image.load(f'images/mainmenu-{i}.png'), (300, 100)) for i in range(1, 4)]
+    restart_imgs = [pygame.transform.scale(pygame.image.load(f'images/restart-{i}.png'), (250, 100)) for i in range(1, 4)]
 
     backquit_sound = pygame.mixer.Sound('sounds/backquit.ogg')
     start_sound = pygame.mixer.Sound('sounds/start.ogg')
@@ -157,8 +156,10 @@ def game_over_screen():
             screen.blit(mainmenu_imgs[1], mainmenu_rect.topleft)
             if mouse_click:
                 screen.blit(mainmenu_imgs[2], mainmenu_rect.topleft)
-                backquit_sound.play()
-                pygame.time.delay(100)  # Delay to see the image
+                screen.blit(restart_imgs[0], restart_rect.topleft)
+                pygame.display.update()
+                pygame.mixer.Channel(5).play(backquit_sound)
+                pygame.time.delay(100)  # Delay to see the 'clicking' image
                 import start_here  # Import the script containing the main menu
                 pygame.mixer.stop()
                 start_here.main_menu()  # Call main_menu function from start_here
@@ -170,8 +171,10 @@ def game_over_screen():
             screen.blit(restart_imgs[1], restart_rect.topleft)
             if mouse_click:
                 screen.blit(restart_imgs[2], restart_rect.topleft)
-                start_sound.play()
-                pygame.time.delay(100)  # Delay to see the image
+                screen.blit(mainmenu_imgs[0], mainmenu_rect.topleft)
+                pygame.display.update()
+                pygame.mixer.Channel(4).play(start_sound)
+                pygame.time.delay(100)
                 start_game()  # Restart the game
                 break
         else:
@@ -386,7 +389,7 @@ def get_background_tiles():
     Calculates which background tiles are needed based on the player's position.
     The function creates a list of tiles to be drawn, each with its position and
     randomly selected index.
-    Eensures that the same tile is not redrawn and maintains a grid of loaded tiles.
+    Ensures that the same tile is not redrawn and maintains a grid of loaded tiles.
 
     Global variables:
         tile_grid: Dictionary tracking the loaded tiles on the grid.
@@ -661,6 +664,7 @@ def main_loop():
         clock.tick(FPS)
 
     pygame.quit()
+    exit()
 
 def start_game():
     """
