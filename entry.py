@@ -59,6 +59,7 @@ def load_images():
         black_background: Surface for black background (temporary)
     """
     global sprite_sheet, black_background, enemy_sprite_sheet1, enemy_sprite_sheet2, enemy_sprite_sheet3
+    global health_pickup_image
 
     sprite_sheet_image = pygame.image.load('images/player.png').convert_alpha()
     sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
@@ -74,6 +75,11 @@ def load_images():
 
     black_background = pygame.Surface((BACKGROUND_WIDTH, BACKGROUND_HEIGHT)) # NOT USED ANYMORE
     black_background.fill(BLACK) # NOT USED ANYMORE
+
+    health_pickup_image = pygame.image.load('images/Item_Black1.png').convert_alpha()
+    health_pickup_image = pygame.transform.scale(health_pickup_image, (48, 48))
+
+
 
 def load_background_tiles():
     """
@@ -439,8 +445,8 @@ def calculate_camera_offset():
     the offset needed for the camera to follow the player while staying centered.
     """
     global camera_x, camera_y
-    camera_x = player.x - (WIDTH / 2) + (PLAYER_WIDTH / 2)
-    camera_y = player.y - (HEIGHT / 2) + (PLAYER_HEIGHT / 2)
+    camera_x = player.x - (WIDTH / 2) + (PLAYER_WIDTH / 3) - 26
+    camera_y = player.y - (HEIGHT / 2) + (PLAYER_HEIGHT / 3) - 26
 
 def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation_list2, enemy_animation_list3):
 
@@ -464,11 +470,41 @@ def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation
         x, y, tile_index = tile
         screen.blit(background_tiles[tile_index], (x - camera_x, y - camera_y))
     #screen.blit(animation_list[action][frame], (icon_x - camera_x, icon_y - camera_y))
-    screen.blit(enemy_animation_list1[enemy_action][enemy_frame], (enemy1.x - camera_x + 28, enemy1.y - camera_y + 28))
-    screen.blit(enemy_animation_list2[enemy_action][enemy_frame], (enemy2.x - camera_x + 28, enemy2.y - camera_y + 28))
-    screen.blit(enemy_animation_list3[enemy_action][enemy_frame], (enemy3.x - camera_x + 28, enemy3.y - camera_y + 28))
-    screen.blit(animation_list[action][frame], (player.x - camera_x, player.y - camera_y))
+    screen.blit(enemy_animation_list1[enemy_action][enemy_frame], (enemy1.x - camera_x - 10, enemy1.y - camera_y - 15))
+    screen.blit(enemy_animation_list2[enemy_action][enemy_frame], (enemy2.x - camera_x - 10, enemy2.y - camera_y - 15))
+    screen.blit(enemy_animation_list3[enemy_action][enemy_frame], (enemy3.x - camera_x - 10, enemy3.y - camera_y - 15))
+    screen.blit(animation_list[action][frame], (player.x - camera_x - PLAYER_WIDTH/3, player.y - camera_y - PLAYER_HEIGHT/3))
     health_bar.draw(screen)
+
+    #ONLY FOR DEBUGGING ENEMY HITBOXES
+    #for enemy, enemy_animation_list in [(enemy1, enemy_animation_list1), (enemy2, enemy_animation_list2), (enemy3, enemy_animation_list3)]:
+        #screen.blit(enemy_animation_list[enemy_action][enemy_frame], (enemy.x - camera_x-10, enemy.y - camera_y-15))
+        #pygame.draw.rect(screen, (255, 255, 0), (enemy.x - camera_x, enemy.y - camera_y, enemy.width, enemy.height), 2)
+
+    #DEBUGGING PLAYER HITBOX
+    #pygame.draw.rect(screen, (0, 255, 0), (player.x - camera_x, player.y - camera_y, player.width, player.height), 2)
+
+    for pickup in health_pickups:
+        screen.blit(health_pickup_image, (pickup.x - camera_x, pickup.y - camera_y -10))
+        #DEBUGGING PICKUP HITBOXES
+        #pygame.draw.rect(screen, (255, 0, 0), (pickup.x - camera_x, pickup.y - camera_y, pickup.width, pickup.height), 2)
+
+def generate_health_pickup(x, y):
+    """
+    Generates a health pickup at the specified coordinates.
+    """
+    health_pickup = pygame.Rect(x + PLAYER_WIDTH/2 - 12, y + PLAYER_HEIGHT/2 - 12, 48, 40)
+    health_pickups.append(health_pickup)
+
+def handle_health_pickups():
+    """
+    Handles the health pickups, ensuring that player health doesn't go above 100.
+    """
+    global player_health
+    player_health = min(player_health + 50, 100) if any(player.colliderect(pickup) for pickup in health_pickups) else player_health
+    for pickup in health_pickups[:]:
+        if player.colliderect(pickup):
+            health_pickups.remove(pickup)
 
 def draw_fps_counter():
     """
@@ -530,9 +566,11 @@ def main_loop():
     The loop continues until the global variable `running` becomes False, and then quits the game.
     """
     global running,player_health, player, health_bar, enemy1_health, enemy2_health, enemy3_health, score, player_arrows, enemy1, enemy2, enemy3
+    global health_pickups
+    
+    health_pickups = []
 
-
-    player = pygame.Rect(icon_x, icon_y, PLAYER_WIDTH/3,PLAYER_HEIGHT/2)
+    player = pygame.Rect(icon_x, icon_y, PLAYER_WIDTH/3, PLAYER_HEIGHT/2)
     health_bar = HealthBar(250, 250, 300, 40, 100)
     player_arrows = []
     player_health = 100
@@ -563,6 +601,8 @@ def main_loop():
     game_over = False
     while running:
         if enemy1_health == 0:
+            if score % 5 == 0:
+                generate_health_pickup(enemy1.x, enemy1.y)
             score += 1
             enemy1_coordinate = enemy_spawn(player)
             enemy1_icon_x = enemy1_coordinate[0]
@@ -570,6 +610,8 @@ def main_loop():
             enemy1_health = 20
             enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
         if enemy2_health == 0:
+            if score % 5 == 0:
+                generate_health_pickup(enemy2.x, enemy2.y)
             score +=1
             enemy2_coordinate = enemy_spawn(player)
             enemy2_icon_x = enemy2_coordinate[0]
@@ -577,6 +619,8 @@ def main_loop():
             enemy2_health = 20
             enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
         if enemy3_health == 0:
+            if score % 5 == 0:
+                generate_health_pickup(enemy3.x, enemy3.y)
             score +=1
             enemy3_coordinate = enemy_spawn(player)
             enemy3_icon_x = enemy3_coordinate[0]
@@ -599,6 +643,7 @@ def main_loop():
         enemy_pathfinding(enemy1, player)
         enemy_pathfinding(enemy2, player)
         enemy_pathfinding(enemy3, player)
+        handle_health_pickups()
         calculate_camera_offset()
         draw_elements(enemy1, enemy2, enemy3, animation_list1, animation_list2, animation_list3)
         draw_fps_counter()
