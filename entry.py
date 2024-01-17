@@ -859,7 +859,7 @@ def main_loop():
         enemy_pathfinding(enemy1, player)
         enemy_pathfinding(enemy2, player)
         enemy_pathfinding(enemy3, player)
-        handle_enemy_collision(enemy1, enemy2, enemy3)
+        #handle_enemy_collision(enemy1, enemy2, enemy3)
         handle_health_pickups()
         calculate_camera_offset()
         draw_elements(enemy1, enemy2, enemy3, animation_list1, animation_list2, animation_list3, player_arrows_R, player_arrows_L, player_arrows_UP, player_arrows_DOWN)
