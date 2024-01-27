@@ -7,6 +7,7 @@ def set_static_variables():
     Initializes some basic game variables.
     """
     global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS, speed, speed_linear, speed_diagonal, MAX_ARROWS, ARROW_SPEED,WIN, last_shot_time
+    global enemy_speed_linear, enemy_speed_diagonal
     WIDTH, HEIGHT = 1000, 800
     BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 100, 100 # Black background size (UNUSED!!)
     PLAYER_WIDTH, PLAYER_HEIGHT = 144, 144 # Attached to some settings in regards to player location on screen
@@ -18,6 +19,8 @@ def set_static_variables():
     speed = 4
     speed_linear = 4
     speed_diagonal = 2.828 # Coefficient 0.707 in regards to linear speed
+    enemy_speed_linear = 2
+    enemy_speed_diagonal = 1.414
 
 def set_color_codes():
     """
@@ -92,16 +95,18 @@ def load_sound_effects():
     """
     Load and initialize sound effects for the game mode.
     """
-    global arrow_shoot, death, enemy_hit, take_potion
+    global arrow_shoot, death, enemy_hit, take_potion, level_up
     arrow_shoot = pygame.mixer.Sound('sounds/arrow_shoot.wav')
     death = pygame.mixer.Sound('sounds/death.wav')
     enemy_hit = pygame.mixer.Sound('sounds/enemy_hit.wav')
     take_potion = pygame.mixer.Sound('sounds/take_potion.wav')
+    level_up = pygame.mixer.Sound('sounds/level_up.wav')
 
     take_potion.set_volume(0.3)
     arrow_shoot.set_volume(0.3)
     death.set_volume(0.5)
     enemy_hit.set_volume(0.3)
+    level_up.set_volume(0.3)
 
 
 def load_background_tiles():
@@ -293,13 +298,15 @@ def handle_events():
         last_lift_up: The last key that was released
     """
     global running, last_lift_up, player_health, enemy1_health, enemy2_health, enemy3_health, last_shot_time, current_time, action, frame
+    global modifier
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYUP:
             last_lift_up = event.key
         elif event.type == PLAYER_HIT:
-            player_health -= 1
+            player_health -= modifier
         elif event.type == ENEMY_HIT1:
             pygame.mixer.Channel(2).play(enemy_hit)
             enemy1_health -= 25
@@ -341,10 +348,6 @@ def handle_events():
             #     action = 12
 
 
-            
-            
-
-
 def update_animation():
     """
     Advances the animation frame based on a specified cooldown time.
@@ -382,7 +385,7 @@ def move_icon():
     adjusting the speed for diagonal or linear movement. 
     Determines the appropriate animation sequence to use based on the direction of movement.
     """
-    global icon_x, icon_y, player, action, frame, animation_completed, last_shot_time, dead
+    global icon_x, icon_y, player, action, frame, animation_completed, last_shot_time, dead, player_health
     keys = pygame.key.get_pressed()
 
     # Adjust speed based on linear or diagonal movement
@@ -412,6 +415,8 @@ def move_icon():
 
     if sum(keys) == 0 and last_lift_up != pygame.K_SPACE and dead == False:
         animation_completed = False
+        if player_health<100:
+            player_health += 0.05 # Player healing while idle
         if last_lift_up == pygame.K_w:
             action = 7
         elif last_lift_up == pygame.K_s:
@@ -473,23 +478,24 @@ def get_background_tiles():
 # Enemy stuff
 def enemy_pathfinding(enemy, player):
     global enemy_action
+    global enemy_speed_linear, enemy_speed_diagonal
 
     # Adjust speed based on linear or diagonal movement
     if ((enemy.x > player.x) or (enemy.x < player.x)) and ((enemy.y > player.y) or (enemy.y < player.y)):
-        speed = speed_diagonal  # Reduce speed for diagonal movement
+        enemy_speed = enemy_speed_diagonal  # Reduce speed for diagonal movement
     else:
-        speed = speed_linear
+        enemy_speed = enemy_speed_linear
 
     if player.x > enemy.x:
-        enemy.x += speed/2
+        enemy.x += enemy_speed
         enemy_action = 0
     if player.x < enemy.x:
-        enemy.x -= speed/2
+        enemy.x -= enemy_speed
         enemy_action = 0
     if player.y > enemy.y:
-        enemy.y += speed/2
+        enemy.y += enemy_speed
     if player.y < enemy.y:
-        enemy.y -= speed/2
+        enemy.y -= enemy_speed
 
 def enemy_spawn(player):
     square_top_left_x = player.x - 500
@@ -554,31 +560,30 @@ def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation
     health_bar.draw(screen)
 
     # ARROW HITBOX DEBUGGING
-    for arrow_R in player_arrows_R:
-        #RIGHT ARROW
-        pygame.draw.rect(screen, (0, 255, 255), (arrow_R.x - camera_x, arrow_R.y - camera_y, arrow_R.width, arrow_R.height), 2) # Blue
-    for arrow_L in player_arrows_L:
-        #LEFT ARROW
-        pygame.draw.rect(screen, (125, 125, 255), (arrow_L.x - camera_x, arrow_L.y - camera_y, arrow_L.width, arrow_L.height), 2) # Blue
-    for arrow_UP in player_arrows_UP:
-        #UP ARROW
-        pygame.draw.rect(screen, (255, 255, 120), (arrow_UP.x - camera_x, arrow_UP.y - camera_y, arrow_UP.width, arrow_UP.height), 2) # Blue
-    for arrow_DOWN in player_arrows_DOWN:
-        #DOWN ARROW
-        pygame.draw.rect(screen, (255, 0, 255), (arrow_DOWN.x - camera_x, arrow_DOWN.y - camera_y, arrow_DOWN.width, arrow_DOWN.height), 2) # Blue
+    # for arrow_R in player_arrows_R:
+    #     #RIGHT ARROW
+    #     pygame.draw.rect(screen, (0, 255, 255), (arrow_R.x - camera_x, arrow_R.y - camera_y, arrow_R.width, arrow_R.height), 2) # Blue
+    # for arrow_L in player_arrows_L:
+    #     #LEFT ARROW
+    #     pygame.draw.rect(screen, (125, 125, 255), (arrow_L.x - camera_x, arrow_L.y - camera_y, arrow_L.width, arrow_L.height), 2) # Blue
+    # for arrow_UP in player_arrows_UP:
+    #     #UP ARROW
+    #     pygame.draw.rect(screen, (255, 255, 120), (arrow_UP.x - camera_x, arrow_UP.y - camera_y, arrow_UP.width, arrow_UP.height), 2) # Blue
+    # for arrow_DOWN in player_arrows_DOWN:
+    #     #DOWN ARROW
+    #     pygame.draw.rect(screen, (255, 0, 255), (arrow_DOWN.x - camera_x, arrow_DOWN.y - camera_y, arrow_DOWN.width, arrow_DOWN.height), 2) # Blue
 
     #ONLY FOR DEBUGGING ENEMY HITBOXES
-    for enemy, enemy_animation_list in [(enemy1, enemy_animation_list1), (enemy2, enemy_animation_list2), (enemy3, enemy_animation_list3)]:
-        #screen.blit(enemy_animation_list[enemy_action][enemy_frame], (enemy.x - camera_x-10, enemy.y - camera_y-15))
-        pygame.draw.rect(screen, (255, 255, 0), (enemy.x - camera_x, enemy.y - camera_y, enemy.width, enemy.height), 2)
+    # for enemy, enemy_animation_list in [(enemy1, enemy_animation_list1), (enemy2, enemy_animation_list2), (enemy3, enemy_animation_list3)]:
+    #     pygame.draw.rect(screen, (255, 255, 0), (enemy.x - camera_x, enemy.y - camera_y, enemy.width, enemy.height), 2)
 
     #DEBUGGING PLAYER HITBOX
-    pygame.draw.rect(screen, (0, 255, 0), (player.x - camera_x, player.y - camera_y, player.width, player.height), 2)
+    #pygame.draw.rect(screen, (0, 255, 0), (player.x - camera_x, player.y - camera_y, player.width, player.height), 2)
 
     for pickup in health_pickups:
         screen.blit(health_pickup_image, (pickup.x - camera_x, pickup.y - camera_y -10))
         #DEBUGGING PICKUP HITBOXES
-        pygame.draw.rect(screen, (255, 0, 0), (pickup.x - camera_x, pickup.y - camera_y, pickup.width, pickup.height), 2)
+        #pygame.draw.rect(screen, (255, 0, 0), (pickup.x - camera_x, pickup.y - camera_y, pickup.width, pickup.height), 2)
 
 
 def generate_health_pickup(x, y):
@@ -600,6 +605,30 @@ def handle_health_pickups():
         if player.colliderect(pickup):
             pygame.mixer.Channel(3).play(take_potion)
             health_pickups.remove(pickup)
+
+def draw_fading_text(surface, text, position, start_time, duration, color, font):
+    """
+    Renders faded text based on predefined fadeout time.
+    Used for 'Enemy Level-Up' popup.
+    """
+    current_time = pygame.time.get_ticks()
+    time_passed = current_time - start_time
+
+    if time_passed <= duration:
+        # Calculate transparency based on time passed
+        alpha = max(255 - (255 * time_passed // duration), 0)
+
+        # Render the text
+        text_surface = font.render(text, True, color)
+        text_surface.set_alpha(alpha)
+
+        # Create a temporary surface with alpha
+        temp_surface = pygame.Surface(text_surface.get_size(), pygame.SRCALPHA)
+        temp_surface.blit(text_surface, (0, 0))
+
+        # Blit the temporary surface onto the main surface
+        surface.blit(temp_surface, position)
+
 
 def draw_fps_counter():
     """
@@ -775,6 +804,9 @@ def main_loop():
     """
     global running,player_health, player, health_bar, enemy1_health, enemy2_health, enemy3_health, score, player_arrows_R, player_arrows_L, player_arrows_UP, player_arrows_DOWN, enemy1, enemy2, enemy3, current_time, dead, frame, action
     global health_pickups
+    global modifier
+    global enemy_speed_linear, enemy_speed_diagonal
+    global level_up
 
     health_pickups = []
 
@@ -803,8 +835,14 @@ def main_loop():
     enemy3_health = 50
 
     score = 0
+    modifier = 1
 
     dead = False
+
+    # Variables for fade-out effect
+    start_time = None
+    fade_text = ""
+    fade_duration = 3000  # Duration of the fade effect in milliseconds (2000 ms = 2 seconds)
 
     enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
     enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
@@ -813,31 +851,46 @@ def main_loop():
     while running:
         current_time = pygame.time.get_ticks()
         if enemy1_health <= 0:
-            if score % 5 == 0:
+            if score % 15 == 0:
                 generate_health_pickup(enemy1.x, enemy1.y)
+            if score % 25 == 0 and score != 0:
+                modifier += 0.4
+                start_time = pygame.time.get_ticks()
+                pygame.mixer.Channel(7).play(level_up)
+                fade_text = "Enemies have leveled up!"
             score += 1
             enemy1_coordinate = enemy_spawn(player)
             enemy1_icon_x = enemy1_coordinate[0]
             enemy1_icon_y = enemy1_coordinate[1]
-            enemy1_health = 50
+            enemy1_health = 50 * modifier
             enemy1 = pygame.Rect(enemy1_icon_x, enemy1_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
         if enemy2_health <= 0:
-            if score % 5 == 0:
+            if score % 15 == 0:
                 generate_health_pickup(enemy2.x, enemy2.y)
+            if score % 25 == 0 and score != 0:
+                modifier += 0.4
+                start_time = pygame.time.get_ticks()
+                pygame.mixer.Channel(7).play(level_up)
+                fade_text = "Enemies have leveled up!"
             score +=1
             enemy2_coordinate = enemy_spawn(player)
             enemy2_icon_x = enemy2_coordinate[0]
             enemy2_icon_y = enemy2_coordinate[1]
-            enemy2_health = 50
+            enemy2_health = 50 * modifier
             enemy2 = pygame.Rect(enemy2_icon_x, enemy2_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
         if enemy3_health <= 0:
-            if score % 5 == 0:
+            if score % 15 == 0:
                 generate_health_pickup(enemy3.x, enemy3.y)
+            if score % 25 == 0 and score != 0:
+                modifier += 0.4
+                start_time = pygame.time.get_ticks()
+                pygame.mixer.Channel(7).play(level_up)
+                fade_text = "Enemies have leveled up!"
             score +=1
             enemy3_coordinate = enemy_spawn(player)
             enemy3_icon_x = enemy3_coordinate[0]
             enemy3_icon_y = enemy3_coordinate[1]
-            enemy3_health = 50
+            enemy3_health = 50 * modifier
             enemy3 = pygame.Rect(enemy3_icon_x, enemy3_icon_y, PLAYER_WIDTH/2,PLAYER_HEIGHT/2)
 
         # death animation execution
@@ -845,8 +898,6 @@ def main_loop():
             print("Game over")
             game_over_screen()
             break
-
-            
 
         health_bar.hp = player_health
         handle_events()
@@ -864,9 +915,13 @@ def main_loop():
         calculate_camera_offset()
         draw_elements(enemy1, enemy2, enemy3, animation_list1, animation_list2, animation_list3, player_arrows_R, player_arrows_L, player_arrows_UP, player_arrows_DOWN)
         draw_fps_counter()
+        
+        # Draw fading text if needed
+        if start_time is not None:
+            draw_fading_text(screen, fade_text, (326, 50), start_time, fade_duration, WHITE, font)
+            if current_time - start_time > fade_duration:
+                start_time = None  # Reset fade_start_time after the text has faded out
 
-        if player_health<100:
-            player_health += 0.1
         pygame.display.update()
         clock.tick(FPS)
 
