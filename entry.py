@@ -8,7 +8,7 @@ def set_static_variables():
     """
     global WIDTH, HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT, FPS, speed, speed_linear, speed_diagonal, MAX_ARROWS, ARROW_SPEED,WIN, last_shot_time
     global enemy_speed_linear, enemy_speed_diagonal
-    WIDTH, HEIGHT = 1000, 800
+    WIDTH, HEIGHT = 1000, 700
     BACKGROUND_WIDTH, BACKGROUND_HEIGHT = 100, 100 # Black background size (UNUSED!!)
     PLAYER_WIDTH, PLAYER_HEIGHT = 144, 144 # Attached to some settings in regards to player location on screen
     FPS = 60 # Framerate value for game
@@ -560,25 +560,25 @@ def draw_elements(enemy1, enemy2, enemy3, enemy_animation_list1, enemy_animation
     health_bar.draw(screen)
 
     # ARROW HITBOX DEBUGGING
-    # for arrow_R in player_arrows_R:
-    #     #RIGHT ARROW
-    #     pygame.draw.rect(screen, (0, 255, 255), (arrow_R.x - camera_x, arrow_R.y - camera_y, arrow_R.width, arrow_R.height), 2) # Blue
-    # for arrow_L in player_arrows_L:
-    #     #LEFT ARROW
-    #     pygame.draw.rect(screen, (125, 125, 255), (arrow_L.x - camera_x, arrow_L.y - camera_y, arrow_L.width, arrow_L.height), 2) # Blue
-    # for arrow_UP in player_arrows_UP:
-    #     #UP ARROW
-    #     pygame.draw.rect(screen, (255, 255, 120), (arrow_UP.x - camera_x, arrow_UP.y - camera_y, arrow_UP.width, arrow_UP.height), 2) # Blue
-    # for arrow_DOWN in player_arrows_DOWN:
-    #     #DOWN ARROW
-    #     pygame.draw.rect(screen, (255, 0, 255), (arrow_DOWN.x - camera_x, arrow_DOWN.y - camera_y, arrow_DOWN.width, arrow_DOWN.height), 2) # Blue
+    for arrow_R in player_arrows_R:
+        #RIGHT ARROW
+        pygame.draw.rect(screen, (0, 255, 255), (arrow_R.x - camera_x, arrow_R.y - camera_y, arrow_R.width, arrow_R.height), 2) # Blue
+    for arrow_L in player_arrows_L:
+        #LEFT ARROW
+        pygame.draw.rect(screen, (125, 125, 255), (arrow_L.x - camera_x, arrow_L.y - camera_y, arrow_L.width, arrow_L.height), 2) # Blue
+    for arrow_UP in player_arrows_UP:
+        #UP ARROW
+        pygame.draw.rect(screen, (255, 255, 120), (arrow_UP.x - camera_x, arrow_UP.y - camera_y, arrow_UP.width, arrow_UP.height), 2) # Blue
+    for arrow_DOWN in player_arrows_DOWN:
+        #DOWN ARROW
+        pygame.draw.rect(screen, (255, 0, 255), (arrow_DOWN.x - camera_x, arrow_DOWN.y - camera_y, arrow_DOWN.width, arrow_DOWN.height), 2) # Blue
 
     #ONLY FOR DEBUGGING ENEMY HITBOXES
-    # for enemy, enemy_animation_list in [(enemy1, enemy_animation_list1), (enemy2, enemy_animation_list2), (enemy3, enemy_animation_list3)]:
-    #     pygame.draw.rect(screen, (255, 255, 0), (enemy.x - camera_x, enemy.y - camera_y, enemy.width, enemy.height), 2)
+    for enemy, enemy_animation_list in [(enemy1, enemy_animation_list1), (enemy2, enemy_animation_list2), (enemy3, enemy_animation_list3)]:
+        pygame.draw.rect(screen, (255, 255, 0), (enemy.x - camera_x, enemy.y - camera_y, enemy.width, enemy.height), 2)
 
     #DEBUGGING PLAYER HITBOX
-    #pygame.draw.rect(screen, (0, 255, 0), (player.x - camera_x, player.y - camera_y, player.width, player.height), 2)
+    pygame.draw.rect(screen, (0, 255, 0), (player.x - camera_x, player.y - camera_y, player.width, player.height), 2)
 
     for pickup in health_pickups:
         screen.blit(health_pickup_image, (pickup.x - camera_x, pickup.y - camera_y -10))
